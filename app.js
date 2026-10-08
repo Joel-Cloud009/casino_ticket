@@ -277,16 +277,18 @@
     $app.innerHTML = `
       <div class="header">
         <div class="me-box">
-          <div>
+          <div class="avatar" id="me-avatar"></div>
+          <div class="me-info">
             <div class="me-name" id="me-name"></div>
             <div class="me-sub" id="me-sub"></div>
           </div>
-          <div class="me-balance" id="me-bal"><div class="num">-</div><div class="unit">내 뽑기권</div></div>
+          <div class="me-balance" id="me-bal"><div class="unit">내 뽑기권</div><div class="num">-</div></div>
         </div>
-        <nav class="tabs" id="tabs"></nav>
       </div>
+      <nav class="tabbar" id="tabs"></nav>
 
       <section data-view="rooms">
+        <h2 class="page-title">게임방</h2>
         <div class="card hidden" id="room-create">
           <h3>게임방 만들기</h3>
           <div class="row">
@@ -300,6 +302,7 @@
       </section>
 
       <section data-view="board">
+        <h2 class="page-title">실시간 현황</h2>
         <div class="team-summary" id="team-summary"></div>
         <div class="stats" id="stats"></div>
         <div id="integrity"></div>
@@ -310,6 +313,7 @@
       </section>
 
       <section data-view="draw">
+        <h2 class="page-title">럭키 드로우</h2>
         <div id="draw-status"></div>
         <div class="draw-stage" id="draw-stage"></div>
         <div class="section-title">내 뽑기 결과</div>
@@ -317,6 +321,7 @@
       </section>
 
       <section data-view="prizes">
+        <h2 class="page-title">상품</h2>
         <div id="pool-summary"></div>
         <div id="prize-list"></div>
         <div class="card hidden" id="prize-form-card">
@@ -345,6 +350,7 @@
       </section>
 
       <section data-view="logs">
+        <h2 class="page-title">기록</h2>
         <div class="card">
           <div class="row" style="justify-content:space-between;margin-bottom:6px">
             <h3 style="margin:0" id="logs-title">내 기록</h3>
@@ -355,6 +361,7 @@
       </section>
 
       <section data-view="admin">
+        <h2 class="page-title">관리</h2>
         <div class="card">
           <h3>🎟️ 뽑기 설정</h3>
           <div class="row" style="justify-content:space-between">
@@ -458,6 +465,8 @@
     if (!state.me || !$('#me-name')) return;
     const meRow = state.players.find((p) => p.id === state.me.id);
     $('#me-name').innerHTML = `${esc(state.me.name)} ${teamBadge(meRow?.team)}`;
+    $('#me-avatar').textContent = [...state.me.name][0] || '?';
+    $('#me-avatar').style.setProperty('--c', meRow?.team ? teamColor(meRow.team) : '#8f6bff');
     $('#me-sub').innerHTML =
       `<span class="live-dot ${state.live ? 'on' : ''}"></span>${state.live ? '실시간 연결됨' : '연결 중…'}`
       + (state.me.is_admin ? ' · <span class="badge admin">관리자</span>' : '');
@@ -476,10 +485,11 @@
   }
 
   function renderTabs() {
-    const tabs = [['rooms', '🎲 게임'], ['board', '📊 현황'], ['draw', '🎟️ 뽑기'], ['prizes', '🎁 상품'], ['logs', '🧾 기록']];
-    if (state.me.is_admin) tabs.push(['admin', '🔑 관리']);
-    $('#tabs').innerHTML = tabs.map(([k, label]) =>
-      `<button class="tab ${state.tab === k ? 'active' : ''}" data-action="tab" data-tab="${k}">${label}</button>`).join('');
+    const tabs = [['rooms', '🎲', '게임'], ['board', '📊', '현황'], ['draw', '🎟️', '뽑기'], ['prizes', '🎁', '상품'], ['logs', '🧾', '기록']];
+    if (state.me.is_admin) tabs.push(['admin', '🔑', '관리']);
+    $('#tabs').innerHTML = tabs.map(([k, icon, label]) =>
+      `<button class="tab ${state.tab === k ? 'active' : ''}" data-action="tab" data-tab="${k}">
+        <span class="tab-icon">${icon}</span><span class="tab-label">${label}</span></button>`).join('');
     $app.querySelectorAll('section[data-view]').forEach((s) => {
       s.classList.toggle('hidden', s.dataset.view !== state.tab);
     });
@@ -606,9 +616,10 @@
       const before = state.prevBalances.get(p.id);
       const flash = before !== undefined && before !== p.balance;
       const stake = stakeBy.get(p.id);
+      const medal = p.balance > 0 && rank <= 3 ? ['🥇', '🥈', '🥉'][rank - 1] : rank;
       return `
         <tr class="${p.id === state.me.id ? 'me' : ''} ${flash ? 'flash' : ''}">
-          <td class="rank">${rank}</td>
+          <td class="rank">${medal}</td>
           <td>${teamBadge(p.team)} ${esc(p.name)}
             ${p.id === state.me.id ? '<span class="badge me">나</span>' : ''}
             ${p.is_admin ? '<span class="badge admin">관리자</span>' : ''}</td>
