@@ -6,8 +6,22 @@
   const $toast = document.getElementById('toast');
   const TOKEN_KEY = 'ticket_casino_token';
   const TEAMS = 4;
-  const TEAM_COLORS = ['#ff6b6b', '#4dabf7', '#51cf66', '#fcc419', '#cc5de8', '#ff922b', '#22b8cf', '#f06595'];
-  const GRADE_COLORS = ['#f2c14e', '#c0a6ff', '#6cb4ff', '#3ecf8e', '#ff922b', '#f06595'];
+  const TEAM_COLORS = ['#F08A7E', '#7FB4F0', '#7FD6A8', '#B9A4F2', '#F2B48A', '#F0A6C8', '#8AD3E0', '#D6D07A'];
+  const GRADE_COLORS = ['#E8C27A', '#D9B3F0', '#9CC7F2', '#9FDDBF', '#F2B48A', '#F0A6C8'];
+  // 선 아이콘 (이모지 대신)
+  const svg = (d, w = 22) => `<svg width="${w}" height="${w}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+  const ICON = {
+    rooms: svg('<rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="8.5" cy="8.5" r="1.2"/><circle cx="15.5" cy="15.5" r="1.2"/><circle cx="12" cy="12" r="1.2"/>'),
+    board: svg('<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>'),
+    draw: svg('<path d="M3 7a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v3a2 2 0 0 0 0 4v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-3a2 2 0 0 0 0-4z"/>'),
+    prizes: svg('<rect x="3" y="8" width="18" height="13" rx="2"/><path d="M12 8v13M3 12h18M12 8S10 3 7.5 4.5 9 8 12 8zM12 8s2-5 4.5-3.5S15 8 12 8z"/>'),
+    logs: svg('<path d="M6 3h12v18l-3-2-3 2-3-2-3 2zM9 8h6M9 12h6"/>'),
+    admin: svg('<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>'),
+    check: svg('<path d="M20 6 9 17l-5-5"/>', 14),
+    chevron: svg('<path d="m9 6 6 6-6 6"/>', 18),
+    lock: svg('<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>', 13),
+    trash: svg('<path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/>', 16),
+  };
 
   const state = {
     token: null,
@@ -224,7 +238,8 @@
   function renderJoin() {
     $app.innerHTML = `
       <div class="center-screen"><form class="join" id="join-form">
-        <div class="logo">🎰</div>
+        <div class="logo">${svg('<path d="M3 7a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v3a2 2 0 0 0 0 4v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-3a2 2 0 0 0 0-4z"/><path d="M15 5v14" stroke-dasharray="2 2"/>', 56)}</div>
+        <div class="join-kicker">LUCKY TICKET</div>
         <h1>뽑기권 카지노</h1>
         <p>이름을 입력하고 입장하세요</p>
         <input class="input" id="join-name" maxlength="20" placeholder="이름" autocomplete="off" required>
@@ -282,7 +297,7 @@
             <div class="me-name" id="me-name"></div>
             <div class="me-sub" id="me-sub"></div>
           </div>
-          <div class="me-balance" id="me-bal"><div class="unit">내 뽑기권</div><div class="num">-</div></div>
+          <div class="me-balance" id="me-bal"><div class="unit">보유</div><div class="num">-</div></div>
         </div>
       </div>
       <nav class="tabbar" id="tabs"></nav>
@@ -303,10 +318,12 @@
 
       <section data-view="board">
         <h2 class="page-title">실시간 현황</h2>
-        <div class="team-summary" id="team-summary"></div>
-        <div class="stats" id="stats"></div>
+        <div class="hero" id="hero"></div>
+        <div class="section-head"><span>팀 현황</span><small>보유 뽑기권 합계</small></div>
+        <div class="team-bars" id="team-summary"></div>
         <div id="integrity"></div>
-        <div class="card"><table class="board" id="board"></table></div>
+        <div class="section-head"><span>실시간 순위</span><small id="stats"></small></div>
+        <div class="lb-list" id="board"></div>
         <div class="footer-link" id="claim-link">
           <button data-action="claim-admin">관리자 코드 입력</button>
         </div>
@@ -483,12 +500,13 @@
   function renderHeader() {
     if (!state.me || !$('#me-name')) return;
     const meRow = state.players.find((p) => p.id === state.me.id);
-    $('#me-name').innerHTML = `${esc(state.me.name)} ${teamBadge(meRow?.team)}`;
+    $('#me-name').textContent = state.me.name;
     $('#me-avatar').textContent = [...state.me.name][0] || '?';
-    $('#me-avatar').style.setProperty('--c', meRow?.team ? teamColor(meRow.team) : '#8f6bff');
+    $('#me-avatar').style.setProperty('--c', meRow?.team ? teamColor(meRow.team) : '#8C84A6');
     $('#me-sub').innerHTML =
-      `<span class="live-dot ${state.live ? 'on' : ''}"></span>${state.live ? '실시간 연결됨' : '연결 중…'}`
-      + (state.me.is_admin ? ' · <span class="badge admin">관리자</span>' : '');
+      `<span class="live-dot ${state.live ? 'on' : ''}" title="${state.live ? '실시간 연결됨' : '연결 중'}"></span>`
+      + (meRow?.team ? `<span style="color:${teamColor(meRow.team)}">${meRow.team}팀</span>` : '팀 미정')
+      + (state.me.is_admin ? ' · 관리자' : '');
     const $bal = $('#me-bal');
     const $num = $bal.querySelector('.num');
     const next = meRow ? String(meRow.balance) : '-';
@@ -504,8 +522,8 @@
   }
 
   function renderTabs() {
-    const tabs = [['rooms', '🎲', '게임'], ['board', '📊', '현황'], ['draw', '🎟️', '뽑기'], ['prizes', '🎁', '상품'], ['logs', '🧾', '기록']];
-    if (state.me.is_admin) tabs.push(['admin', '🔑', '관리']);
+    const tabs = [['rooms', ICON.rooms, '게임'], ['board', ICON.board, '현황'], ['draw', ICON.draw, '뽑기'], ['prizes', ICON.prizes, '상품'], ['logs', ICON.logs, '기록']];
+    if (state.me.is_admin) tabs.push(['admin', ICON.admin, '관리']);
     $('#tabs').innerHTML = tabs.map(([k, icon, label]) =>
       `<button class="tab ${state.tab === k ? 'active' : ''}" data-action="tab" data-tab="${k}">
         <span class="tab-icon">${icon}</span><span class="tab-label">${label}</span></button>`).join('');
@@ -538,12 +556,12 @@
         let actions = '';
         if (r.status === 'open') {
           actions = mine
-            ? `<span class="muted small" style="flex:1;align-self:center">✅ 1장 걸었어요</span>
+            ? `<span class="muted small" style="flex:1;align-self:center">1장 걸었어요</span>
                <button class="btn ghost" data-action="unbet" data-room="${r.id}">걸기 취소</button>`
             : `<button class="btn gold main" data-action="bet" data-room="${r.id}" ${myBal < 1 ? 'disabled' : ''}>
-                 ${myBal < 1 ? '뽑기권이 없어요' : '🎟️ 1장 걸기'}</button>`;
+                 ${myBal < 1 ? '뽑기권이 없어요' : '1장 걸기'}</button>`;
         } else {
-          actions = `<span class="muted small">🔒 베팅 마감 · 결과 대기 중${mine ? ' (참여 중)' : ''}</span>`;
+          actions = `<span class="muted small locked-note">${ICON.lock} 마감 · 결과 대기 중${mine ? ' (참여 중)' : ''}</span>`;
         }
 
         const admin = me.is_admin ? `
@@ -553,9 +571,9 @@
               : `<button class="btn sm" data-action="unlock" data-room="${r.id}">베팅 재개</button>`}
             ${picking
               ? `<button class="btn sm ghost" data-action="pick-cancel">선택 취소</button>`
-              : `<button class="btn sm green" data-action="pick-start" data-room="${r.id}" ${roomBets.length === 0 ? 'disabled' : ''}>🏆 승자 선택</button>`}
+              : `<button class="btn sm green" data-action="pick-start" data-room="${r.id}" ${roomBets.length === 0 ? 'disabled' : ''}>승자 선택</button>`}
             <button class="btn sm red" data-action="cancel-room" data-room="${r.id}">방 취소·환불</button>
-            <button class="btn sm red" data-action="delete-room" data-room="${r.id}">🗑️ 삭제</button>
+            <button class="btn sm red" data-action="delete-room" data-room="${r.id}" aria-label="삭제">${ICON.trash}</button>
           </div>
           ${picking ? '<div class="pick-hint">👆 위 참가자 중 승자를 눌러주세요</div>' : ''}` : '';
 
@@ -563,11 +581,10 @@
           <div class="card">
             <div class="room-head">
               <div>
+                <div class="room-state ${r.status}"><i></i>${r.status === 'open' ? '베팅 중' : '마감'} · ${roomBets.length}명 참여</div>
                 <div class="room-title">${esc(r.title)}</div>
-                <span class="badge ${r.status}">${r.status === 'open' ? '베팅 중' : '마감'}</span>
-                <span class="muted small">· ${roomBets.length}명 참여</span>
               </div>
-              <div class="pot"><div class="num">${roomBets.length}</div><div class="unit">판돈(장)</div></div>
+              <div class="pot"><div class="unit">판돈</div><div class="num">${roomBets.length}</div></div>
             </div>
             <div class="chips">${chips}</div>
             <div class="room-actions">${actions}</div>
@@ -589,64 +606,82 @@
           <div class="row" style="gap:10px">
             <div style="text-align:right">
               ${r.status === 'settled'
-                ? `<div>🏆 <b>${esc(nameOf(r.winner_id))}</b></div><div class="small" style="color:var(--gold)">+${r.pot}장</div>`
+                ? `<div><b>${esc(nameOf(r.winner_id))}</b></div><div class="small" style="color:var(--gold)">+${r.pot}장</div>`
                 : '<span class="badge cancelled">취소·환불</span>'}
             </div>
-            ${me.is_admin ? `<button class="btn sm red" data-action="delete-room" data-room="${r.id}" title="삭제">🗑️</button>` : ''}
+            ${me.is_admin ? `<button class="btn sm red" data-action="delete-room" data-room="${r.id}" aria-label="삭제">${ICON.trash}</button>` : ''}
           </div>
         </div>`).join('');
   }
 
   function renderBoard() {
-    // 팀별 요약
-    $('#team-summary').innerHTML = Array.from({ length: TEAMS }, (_, i) => {
-      const t = i + 1;
-      const members = state.players.filter((p) => p.team === t);
-      const sum = members.reduce((s, p) => s + p.balance, 0);
-      return `
-        <div class="team-box" style="--c:${teamColor(t)}">
-          <div class="team-name">${t}팀</div>
-          <div class="team-sum">${sum}<span>장</span></div>
-          <div class="team-cnt">${members.length}명</div>
-        </div>`;
-    }).join('');
+    // 순위 계산 (같은 보유량은 같은 순위)
+    let rank = 0;
+    let prevBal = null;
+    const ranked = state.players.map((p, i) => {
+      if (p.balance !== prevBal) { rank = i + 1; prevBal = p.balance; }
+      return { ...p, rank };
+    });
+
+    // 내 뽑기권 카드
+    const meRow = ranked.find((p) => p.id === state.me.id);
+    const teamSums = Array.from({ length: TEAMS }, (_, i) => ({
+      team: i + 1,
+      sum: state.players.filter((p) => p.team === i + 1).reduce((s, p) => s + p.balance, 0),
+      cnt: state.players.filter((p) => p.team === i + 1).length,
+    }));
+    const teamRank = meRow?.team
+      ? [...teamSums].sort((a, b) => b.sum - a.sum).findIndex((t) => t.team === meRow.team) + 1
+      : null;
+    $('#hero').innerHTML = `
+      <div class="hero-top">
+        <span>내 뽑기권</span>
+        <span>${meRow ? `전체 ${meRow.rank}위` : ''}${teamRank ? ` · 팀 ${teamRank}위` : ''}</span>
+      </div>
+      <div class="hero-num"><b>${meRow?.balance ?? 0}</b><span>장</span></div>
+      <div class="hero-actions">
+        <button class="btn gold" data-action="tab" data-tab="draw">${ICON.draw} 뽑기 하러 가기</button>
+        <button class="btn ghost" data-action="tab" data-tab="rooms">게임방</button>
+      </div>`;
+
+    // 팀 현황 막대
+    const maxSum = Math.max(1, ...teamSums.map((t) => t.sum));
+    $('#team-summary').innerHTML = teamSums.map((t) => `
+      <div class="team-bar" style="--c:${teamColor(t.team)}">
+        <span class="team-name">${t.team}팀</span>
+        <span class="bar"><i style="width:${Math.round((t.sum / maxSum) * 100)}%"></i></span>
+        <span class="team-sum">${t.sum}</span>
+        <span class="team-cnt">${t.cnt}명</span>
+      </div>`).join('');
 
     const s = state.stats;
     if (s) {
-      $('#stats').innerHTML = `
-        <div class="stat"><div class="num">${s.players}</div><div class="label">참가자</div></div>
-        <div class="stat"><div class="num">${s.held}</div><div class="label">보유 합계</div></div>
-        <div class="stat"><div class="num">${s.staked}</div><div class="label">걸린 판돈</div></div>`;
+      $('#stats').textContent = `참가자 ${s.players} · 판돈 ${s.staked}`;
       const drawn = s.drawn ?? 0;
       const ok = s.issued === s.held + s.staked + drawn;
-      const detail = `보유 ${s.held} + 판돈 ${s.staked} + 뽑기 사용 ${drawn}`;
+      const detail = `보유 ${s.held} + 판돈 ${s.staked} + 뽑기 ${drawn}`;
       $('#integrity').innerHTML = ok
-        ? `<div class="integrity ok">✔ 정합성 정상 · 총 발행 ${s.issued}장 = ${detail}</div>`
+        ? `<div class="integrity ok">${ICON.check} 총 발행 ${s.issued}장 = ${detail} · 정합성 확인됨</div>`
         : `<div class="integrity bad">⚠ 수량 불일치 · 총 발행 ${s.issued}장 ≠ ${detail}</div>`;
     }
 
     const stakeBy = new Map();
     for (const b of state.bets) stakeBy.set(b.player_id, (stakeBy.get(b.player_id) || 0) + 1);
 
-    let rank = 0;
-    let prevBal = null;
-    const rows = state.players.map((p, i) => {
-      if (p.balance !== prevBal) { rank = i + 1; prevBal = p.balance; }
+    $('#board').innerHTML = ranked.map((p) => {
       const before = state.prevBalances.get(p.id);
       const flash = before !== undefined && before !== p.balance;
       const stake = stakeBy.get(p.id);
-      const medal = p.balance > 0 && rank <= 3 ? ['🥇', '🥈', '🥉'][rank - 1] : rank;
+      const tc = p.team ? teamColor(p.team) : '#8C84A6';
       return `
-        <tr class="${p.id === state.me.id ? 'me' : ''} ${flash ? 'flash' : ''}">
-          <td class="rank">${medal}</td>
-          <td>${teamBadge(p.team)} ${esc(p.name)}
-            ${p.id === state.me.id ? '<span class="badge me">나</span>' : ''}
-            ${p.is_admin ? '<span class="badge admin">관리자</span>' : ''}</td>
-          <td class="stake">${stake ? `판돈 ${stake}` : ''}</td>
-          <td class="bal">${p.balance}</td>
-        </tr>`;
-    }).join('');
-    $('#board').innerHTML = rows || '<tr><td class="empty">참가자가 없어요.</td></tr>';
+        <div class="lb-row ${p.id === state.me.id ? 'me' : ''} ${flash ? 'flash' : ''} ${p.balance > 0 && p.rank <= 3 ? 'top' : ''}">
+          <span class="rk">${p.rank}</span>
+          <span class="av" style="--c:${tc}">${esc([...p.name][0] || '?')}</span>
+          <span class="nm"><b>${esc(p.name)}${p.id === state.me.id ? ' <em>나</em>' : ''}</b>
+            <small style="color:${tc}">${p.team ? `${p.team}팀` : '팀 미정'}${p.is_admin ? ' · 관리자' : ''}${stake ? ` · 판돈 ${stake}` : ''}</small></span>
+          <span class="bl">${p.balance}</span>
+        </div>`;
+    }).join('') || '<div class="empty">참가자가 없어요.</div>';
     state.prevBalances = new Map(state.players.map((p) => [p.id, p.balance]));
 
     $('#claim-link').classList.toggle('hidden', state.me.is_admin);
@@ -671,14 +706,18 @@
   // 실시간 갱신마다 바뀌는 부분 (카드 자체는 건드리지 않음)
   function renderDrawInfo() {
     const pl = pool();
+    const pct = pl.total ? Math.round((pl.remaining / pl.total) * 100) : 0;
     $('#draw-status').innerHTML = `
       <div class="draw-status ${drawOpen() ? 'open' : ''}">
-        <span>${drawOpen() ? '🟢 뽑기 진행 중' : '⏸ 뽑기 대기 중'}</span>
-        <b>남은 복권 ${String(pl.remaining).padStart(3, '0')} / ${String(pl.total).padStart(3, '0')}</b>
+        <div class="ds-row">
+          <span class="ds-state"><i></i>${drawOpen() ? '뽑기 진행 중' : '뽑기 대기 중'}</span>
+          <span>남은 복권 <b>${pl.remaining}</b> / ${pl.total}</span>
+        </div>
+        <div class="ds-bar"><i style="width:${pct}%"></i></div>
       </div>`;
     // 카드는 다시 그리지 않고 숫자만 갱신 (뜯는 중이면 그대로)
     if (drawUI.mode === 'idle' && $('#pt-count')) {
-      $('#pt-count').textContent = `${String(pl.remaining).padStart(3, '0')}/${String(pl.total).padStart(3, '0')}`;
+      $('#pt-count').textContent = `${pl.remaining}/${pl.total}`;
     }
 
     // 다른 기기에서 뽑고 안 뜯은 복권이 있으면 이어서 뜯기
@@ -715,7 +754,7 @@
     if (!btn) return;
     const reason = drawBlockReason();
     btn.disabled = !!reason;
-    btn.textContent = reason || (drawUI.mode === 'revealed' ? '🎟️ 한 장 더 뽑기' : '🎟️ 뽑기권 1장으로 복권 뽑기');
+    btn.innerHTML = reason ? esc(reason) : `${ICON.draw} ${drawUI.mode === 'revealed' ? '한 장 더 뽑기' : '뽑기권 1장 사용하기'}`;
   }
 
   // 카드 영역: 뽑기 흐름이 바뀔 때만 다시 그림
@@ -730,25 +769,27 @@
 
     $st.innerHTML = `
       <div class="pt-card ${revealed ? (d.is_blank ? 'lose' : 'win') : ''}" id="pt-card">
-        <div class="pt-top">
-          <div class="pt-badge"><small>ROUND</small><span>${no}</span><b id="pt-count">${String(pl.remaining).padStart(3, '0')}/${String(pl.total).padStart(3, '0')}</b></div>
-          <div class="pt-title">LUCKY<br><span>TICKET</span></div>
-        </div>
-        <div class="pt-window" id="pt-window">
-          <div class="pt-prize">
-            <div class="pt-grade">${d ? esc(d.is_blank ? '꽝' : d.grade) : '?'}</div>
-            <div class="pt-emoji">${d ? (d.is_blank ? '😢' : prizeVisual(d.prize_id, d.emoji)) : '🎁'}</div>
-            <div class="pt-pname">${d && !d.is_blank ? esc(d.prize_name) : ''}</div>
+        <div class="pt-inner">
+          <div class="pt-top">
+            <span>LUCKY TICKET</span>
+            <span>No. ${no}</span>
           </div>
-          <div class="pt-cover ${peelable ? 'peelable' : ''}" id="pt-cover" style="width:${revealed ? 0 : 100}%">
-            <div class="pt-cover-bg" id="pt-cover-bg"></div>
-            <div class="pt-tab">${peelable ? '▶' : '🎟️'}</div>
-            <div class="pt-open">${peelable ? 'Open<br>Here!' : ''}</div>
+          <div class="pt-window" id="pt-window">
+            <div class="pt-prize">
+              <div class="pt-grade">${d ? esc(d.is_blank ? '꽝' : d.grade) : '?'}</div>
+              <div class="pt-emoji">${d ? (d.is_blank ? '😢' : prizeVisual(d.prize_id, d.emoji)) : ''}</div>
+              <div class="pt-pname">${d && !d.is_blank ? esc(d.prize_name) : ''}</div>
+            </div>
+            <div class="pt-cover ${peelable ? 'peelable' : ''}" id="pt-cover" style="width:${revealed ? 0 : 100}%">
+              <div class="pt-cover-bg" id="pt-cover-bg"></div>
+              <div class="pt-tab">${ICON.chevron}</div>
+              <div class="pt-open"><b>${peelable ? 'OPEN →' : 'LUCKY'}</b><span>${peelable ? '오른쪽으로 밀어서 뜯기' : '뽑기권 1장으로 한 장'}</span></div>
+            </div>
           </div>
         </div>
         <div class="pt-coins" id="pt-coins"></div>
       </div>
-      <div class="pt-result" id="pt-result">${revealed ? resultHtml(d) : (peelable ? '<div class="muted">👉 왼쪽 탭을 오른쪽으로 밀어서 뜯어보세요</div>' : '')}</div>
+      <div class="pt-result" id="pt-result">${revealed ? resultHtml(d) : (peelable ? '<div class="muted small">결과는 이미 정해져 있어요. 뜯는 순간 무대에 공개돼요</div>' : '')}</div>
       ${peelable ? '' : '<button class="btn gold block draw-btn" id="draw-btn" data-action="draw"></button>'}`;
 
     updateDrawButton();
@@ -758,7 +799,7 @@
   function resultHtml(d) {
     return d.is_blank
       ? `<div class="res lose"><div class="res-big">꽝!</div><div>다음 기회에 😢</div></div>`
-      : `<div class="res win"><div class="res-big">🎉 ${esc(d.grade)} 당첨!</div><div class="res-prize">${esc(d.emoji)} ${esc(d.prize_name)}</div></div>`;
+      : `<div class="res win"><div class="res-big">${esc(d.grade)} 당첨</div><div class="res-prize">${esc(d.prize_name)}</div></div>`;
   }
 
   // 왼쪽 → 오른쪽으로 뜯기 (덮개는 오른쪽에 붙어 있고 왼쪽부터 줄어듦)
@@ -881,44 +922,38 @@
 
     $('#pool-summary').innerHTML = `
       <div class="pool">
-        <div>
-          <div class="muted small">상자에 남은 복권</div>
-          <div class="pool-num">${String(pl.remaining).padStart(3, '0')}<span> / ${String(pl.total).padStart(3, '0')}</span></div>
-        </div>
-        <div class="pool-blank">${blanks.length ? `꽝 포함 · 꽝 ${blanks.reduce((s, b) => s + b.quantity, 0)}장` : ''}</div>
+        <span>${blanks.length ? `꽝 ${blanks.reduce((s, b) => s + b.quantity, 0)}장 포함` : '꽝 없이 모두 하나씩'}</span>
+        <span>상자에 남은 복권 <b>${pl.remaining}</b> / ${pl.total}</span>
       </div>`;
 
-    const card = (p, i) => {
+    const tile = (p, i) => {
       const won = revealed.filter((d) => d.prize_id === p.id);
       const left = p.quantity - won.length;   // 무대와 같은 기준: 뜯어서 공개된 것만 차감
       const col = GRADE_COLORS[i % GRADE_COLORS.length];
       return `
-        <div class="card prize ${left <= 0 ? 'soldout' : ''}" style="--g:${col}">
-          <div class="prize-head">
-            <div class="prize-emoji">${prizeVisual(p.id, p.emoji)}</div>
-            <div style="flex:1;min-width:0">
-              <span class="grade">${esc(p.grade)}</span>
-              <div class="prize-name">${esc(p.name)}</div>
-              ${p.description ? `<div class="small muted">${esc(p.description)}</div>` : ''}
-            </div>
-            <div class="prize-left"><b>${left}</b><span>/ ${p.quantity}</span></div>
+        <div class="pz ${i === 0 ? 'featured' : ''} ${left <= 0 ? 'soldout' : ''}" style="--g:${col}">
+          <div class="pz-img">${prizeVisual(p.id, p.emoji)}</div>
+          <div class="pz-body">
+            <div class="pz-top"><span class="grade">${esc(p.grade)}</span><span class="pz-left"><b>${left}</b> / ${p.quantity}</span></div>
+            <div class="pz-name">${esc(p.name)}</div>
+            ${p.description ? `<div class="pz-desc">${esc(p.description)}</div>` : ''}
+            ${won.length && p.announce === false ? `<div class="winners"><span class="chip winner">당첨 ${won.length}명</span></div>` : ''}
+            ${won.length && p.announce !== false ? `<div class="winners">${won.map((d) => `
+              <${admin ? 'button' : 'span'} class="chip winner ${d.claimed ? 'claimed' : ''}" ${admin ? `data-action="toggle-claim" data-draw="${d.id}"` : ''}>
+                ${esc(d.player_name)}${d.claimed ? ' ✓' : ''}
+              </${admin ? 'button' : 'span'}>`).join('')}</div>` : ''}
+            ${admin ? `<div class="pz-admin">
+              <button class="btn sm ghost" data-action="edit-prize" data-prize="${p.id}">수정</button>
+              ${p.remaining === p.quantity ? `<button class="btn sm red" data-action="delete-prize" data-prize="${p.id}" aria-label="삭제">${ICON.trash}</button>` : ''}
+              <span class="small muted">실제 ${p.remaining}${p.announce === false ? ' · 발표 안 함' : ''}</span>
+            </div>` : ''}
           </div>
-          ${won.length && p.announce === false ? `<div class="winners"><span class="chip winner">당첨 ${won.length}명</span></div>` : ''}
-          ${won.length && p.announce !== false ? `<div class="winners">${won.map((d) => `
-            <${admin ? 'button' : 'span'} class="chip winner ${d.claimed ? 'claimed' : ''}" ${admin ? `data-action="toggle-claim" data-draw="${d.id}"` : ''}>
-              ${teamBadge(d.team)} ${esc(d.player_name)} ${d.claimed ? '✓' : ''}
-            </${admin ? 'button' : 'span'}>`).join('')}</div>` : ''}
-          ${admin ? `<div class="admin-actions">
-            <button class="btn sm ghost" data-action="edit-prize" data-prize="${p.id}">수정</button>
-            ${p.remaining === p.quantity ? `<button class="btn sm red" data-action="delete-prize" data-prize="${p.id}">삭제</button>` : ''}
-            <span class="small muted" style="align-self:center">실제 남은 ${p.remaining}${p.announce === false ? ' · 무대 발표 안 함' : ''}</span>
-          </div>` : ''}
         </div>`;
     };
 
     $('#prize-list').innerHTML = (real.length === 0 && blanks.length === 0)
       ? `<div class="card empty">아직 등록된 상품이 없어요.${admin ? '<br>아래에서 상품을 추가해 주세요.' : ''}</div>`
-      : real.map(card).join('') + blanks.map((p) => `
+      : `<div class="pz-grid">${real.map(tile).join('')}</div>` + blanks.map((p) => `
         <div class="card blank-row">
           <span>${esc(p.emoji)} <b>${esc(p.grade)}</b> ${p.quantity}장</span>
           ${admin ? `<span class="row" style="gap:6px">
