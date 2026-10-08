@@ -253,7 +253,7 @@
     setTimeout(() => {
       el.classList.add('hide');
       setTimeout(() => { el.remove(); showing = false; nextAnnounce(); }, 500);
-    }, queue.length ? 5000 : 7000);
+    }, queue.length ? 3000 : 5000);   // 뒤에 대기 중이면 3초, 아니면 5초
   }
 
   function coinRain() {
