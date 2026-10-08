@@ -13,9 +13,11 @@
 ### 처음 한 번
 
 ```bash
-git clone -b dev https://github.com/Joel-Cloud009/casino_ticket.git
+git clone https://github.com/Joel-Cloud009/casino_ticket.git
 cd casino_ticket
 ```
+
+기본 브랜치가 `dev` 라서 자동으로 `dev` 로 받아짐. (`git branch` 로 `* dev` 확인)
 
 ### 매번
 

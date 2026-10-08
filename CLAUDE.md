@@ -18,6 +18,7 @@
 
 ## 브랜치와 배포 (중요)
 
+- **작업 시작 전 항상** `git branch --show-current` 로 확인하고, `dev` 가 아니면 `git checkout dev` (없으면 `git checkout -b dev origin/dev`) 후 `git pull` 부터 한다. 사용자에게 따로 묻지 않아도 된다.
 - Netlify 가 GitHub `main` 브랜치만 자동 배포한다. **push 한 번 = 배포 1회 = Netlify 크레딧 소모.**
 - 평소 작업은 **`dev` 브랜치**에 커밋하고 `git push origin dev` (백업만, 배포 없음).
 - **`main` 에는 사용자가 "배포하자/패치하자"고 할 때만** `dev` 를 머지해서 push 한다.
