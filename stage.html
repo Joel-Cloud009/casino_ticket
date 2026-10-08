@@ -168,7 +168,7 @@
       seen = new Set(draws.map((d) => d.id));
       // stage.html?demo → 최근 당첨을 다시 발표 (리허설용)
       if (new URLSearchParams(location.search).has('demo')) {
-        const last = draws.find((d) => !d.is_blank)
+        const last = draws.find((d) => !d.is_blank && prizes.find((p) => p.id === d.prize_id)?.announce !== false)
           || { player_name: '홍길동', team: 1, prize_id: null, grade: 'A상', prize_name: '미리보기 상품', emoji: '🎁' };
         queue.push(last);
         setTimeout(nextAnnounce, 800);
@@ -176,11 +176,13 @@
     } else {
       // 오래된 것부터 발표
       const fresh = draws.filter((d) => !seen.has(d.id)).reverse();
+      // 꽝이 아니고 '무대 발표'가 켜진 상품만 크게 발표 (흔한 상품은 목록에만)
+      const big = (d) => !d.is_blank && prizes.find((p) => p.id === d.prize_id)?.announce !== false;
       for (const d of fresh) {
         seen.add(d.id);
-        if (!d.is_blank) queue.push(d);
+        if (big(d)) queue.push(d);
       }
-      if (fresh.length) beep(fresh.some((d) => !d.is_blank) ? null : 'blip');
+      if (fresh.length) beep(fresh.some(big) ? null : 'blip');
       nextAnnounce();
     }
     render();

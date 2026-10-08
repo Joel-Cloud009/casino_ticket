@@ -336,7 +336,8 @@
               <div style="flex:1"><label for="pf-qty">수량</label><input class="input" id="pf-qty" type="number" inputmode="numeric" min="0" max="10000" value="1"></div>
               <div style="flex:1"><label for="pf-sort">표시 순서</label><input class="input" id="pf-sort" type="number" inputmode="numeric" value="1"></div>
             </div>
-            <label class="toggle" style="margin-top:4px"><input type="checkbox" id="pf-blank"> 꽝 (상품 없음)</label>
+            <label class="toggle" style="margin-top:4px"><input type="checkbox" id="pf-announce" checked> 📺 무대 화면에서 크게 발표</label>
+            <label class="toggle"><input type="checkbox" id="pf-blank"> 꽝 (상품 없음)</label>
             <div class="row" style="margin-top:6px">
               <button class="btn gold" style="flex:1" data-action="save-prize">저장</button>
               <button class="btn ghost hidden" id="pf-cancel" data-action="cancel-prize">취소</button>
@@ -895,7 +896,7 @@
           ${admin ? `<div class="admin-actions">
             <button class="btn sm ghost" data-action="edit-prize" data-prize="${p.id}">수정</button>
             ${p.remaining === p.quantity ? `<button class="btn sm red" data-action="delete-prize" data-prize="${p.id}">삭제</button>` : ''}
-            <span class="small muted" style="align-self:center">실제 남은 ${p.remaining}</span>
+            <span class="small muted" style="align-self:center">실제 남은 ${p.remaining}${p.announce === false ? ' · 무대 발표 안 함' : ''}</span>
           </div>` : ''}
         </div>`;
     };
@@ -926,6 +927,7 @@
     $('#pf-qty').value = p?.quantity ?? 1;
     $('#pf-sort').value = p?.sort ?? (state.prizes.length + 1);
     $('#pf-blank').checked = p?.is_blank ?? false;
+    $('#pf-announce').checked = p?.announce ?? true;
   }
 
   // ------------------------------------------------------------------
@@ -1161,6 +1163,7 @@
           p_quantity: parseInt($('#pf-qty').value, 10),
           p_is_blank: $('#pf-blank').checked,
           p_sort: parseInt($('#pf-sort').value, 10) || 0,
+          p_announce: $('#pf-announce').checked,
         };
         if (!args.p_grade) { toast('등급을 입력해 주세요. (예: A상, 꽝)', true); return; }
         if (!Number.isInteger(args.p_quantity) || args.p_quantity < 0) { toast('수량을 확인해 주세요.', true); return; }

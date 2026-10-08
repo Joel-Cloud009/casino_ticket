@@ -506,6 +506,8 @@ create table if not exists ticket_prizes (
   created_at  timestamptz not null default now(),
   check (remaining <= quantity)
 );
+-- 무대 화면에서 크게 발표할지 (흔한 상품은 끄면 실시간 목록에만 표시)
+alter table ticket_prizes add column if not exists announce boolean not null default true;
 
 -- 뽑기 결과. revealed = 본인이 복권을 다 뜯었는지 (무대 화면은 뜯은 것만 표시)
 create table if not exists ticket_draws (
@@ -647,9 +649,10 @@ begin
 end $$;
 
 -- p_id 가 null 이면 추가, 아니면 수정
+drop function if exists ticket_admin_save_prize(text, bigint, text, text, text, text, int, boolean, int);
 create or replace function ticket_admin_save_prize(
   p_token text, p_id bigint, p_grade text, p_name text, p_emoji text,
-  p_description text, p_quantity int, p_is_blank boolean, p_sort int)
+  p_description text, p_quantity int, p_is_blank boolean, p_sort int, p_announce boolean default true)
 returns bigint
 language plpgsql security definer set search_path = public as $$
 declare
@@ -665,10 +668,10 @@ begin
   end if;
 
   if p_id is null then
-    insert into ticket_prizes (grade, name, emoji, description, quantity, remaining, is_blank, sort)
+    insert into ticket_prizes (grade, name, emoji, description, quantity, remaining, is_blank, sort, announce)
     values (v_grade, left(btrim(coalesce(p_name, '')), 40), coalesce(nullif(btrim(p_emoji), ''), '🎁'),
             nullif(left(btrim(coalesce(p_description, '')), 200), ''), p_quantity, p_quantity,
-            coalesce(p_is_blank, false), coalesce(p_sort, 0))
+            coalesce(p_is_blank, false), coalesce(p_sort, 0), coalesce(p_announce, true))
     returning id into v_id;
     perform ticket__log('prize', null, me.id, null, 0, '상품 추가: ' || v_grade);
     return v_id;
@@ -688,7 +691,8 @@ begin
     quantity = p_quantity,
     remaining = p_quantity - v_drawn,
     is_blank = coalesce(p_is_blank, false),
-    sort = coalesce(p_sort, 0)
+    sort = coalesce(p_sort, 0),
+    announce = coalesce(p_announce, true)
   where id = p_id;
   perform ticket__log('prize', null, me.id, null, 0, '상품 수정: ' || v_grade);
   return p_id;
@@ -786,7 +790,7 @@ grant execute on function ticket_admin_import_teams(text, jsonb)                
 grant execute on function ticket_admin_grant_ranks(text, jsonb, text)                          to anon, authenticated;
 grant execute on function ticket_admin_grant_team(text, smallint, int, text)                   to anon, authenticated;
 grant execute on function ticket_admin_set_draw_open(text, boolean)                            to anon, authenticated;
-grant execute on function ticket_admin_save_prize(text, bigint, text, text, text, text, int, boolean, int) to anon, authenticated;
+grant execute on function ticket_admin_save_prize(text, bigint, text, text, text, text, int, boolean, int, boolean) to anon, authenticated;
 grant execute on function ticket_admin_delete_prize(text, bigint)                              to anon, authenticated;
 grant execute on function ticket_admin_set_claimed(text, bigint, boolean)                      to anon, authenticated;
 grant execute on function ticket_draw(text)                                                    to anon, authenticated;
