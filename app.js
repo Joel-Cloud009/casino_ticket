@@ -889,7 +889,8 @@
             </div>
             <div class="prize-left"><b>${left}</b><span>/ ${p.quantity}</span></div>
           </div>
-          ${won.length ? `<div class="winners">${won.map((d) => `
+          ${won.length && p.announce === false ? `<div class="winners"><span class="chip winner">당첨 ${won.length}명</span></div>` : ''}
+          ${won.length && p.announce !== false ? `<div class="winners">${won.map((d) => `
             <${admin ? 'button' : 'span'} class="chip winner ${d.claimed ? 'claimed' : ''}" ${admin ? `data-action="toggle-claim" data-draw="${d.id}"` : ''}>
               ${teamBadge(d.team)} ${esc(d.player_name)} ${d.claimed ? '✓' : ''}
             </${admin ? 'button' : 'span'}>`).join('')}</div>` : ''}

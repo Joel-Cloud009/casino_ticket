@@ -211,7 +211,9 @@
             <div class="p-emoji">${esc(p.emoji)}</div>
             <div><span class="p-grade">${esc(p.grade)}</span><div class="p-name">${esc(p.name)}</div></div>
             <div class="p-left"><b>${left}</b><span>/ ${p.quantity}개 남음</span></div>
-            ${won.length ? `<div class="p-winners">${won.map((d) => `<span>${team(d.team)}${esc(d.player_name)}</span>`).join('')}</div>` : ''}
+            ${!won.length ? '' : p.announce === false
+              ? `<div class="p-winners"><span>당첨 ${won.length}명</span></div>`
+              : `<div class="p-winners">${won.map((d) => `<span>${team(d.team)}${esc(d.player_name)}</span>`).join('')}</div>`}
           </div>`;
       }).join('');
 
