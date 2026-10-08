@@ -8,7 +8,6 @@
   const TEAMS = 4;
   const TEAM_COLORS = ['#ff6b6b', '#4dabf7', '#51cf66', '#fcc419', '#cc5de8', '#ff922b', '#22b8cf', '#f06595'];
   const GRADE_COLORS = ['#f2c14e', '#c0a6ff', '#6cb4ff', '#3ecf8e', '#ff922b', '#f06595'];
-  const FILLER_SYMBOLS = ['🍒', '🍋', '🔔', '🍉', '⭐', '🍀'];
 
   const state = {
     token: null,
@@ -31,7 +30,6 @@
 
   // 뽑기 화면 상태 (실시간 갱신과 별개로 유지)
   const drawUI = { mode: 'idle', draw: null, progress: 0 };
-  const symbolCache = new Map();
 
   // ------------------------------------------------------------------
   // 유틸
@@ -631,29 +629,11 @@
     return state.draws.find((d) => d.player_id === state.me.id && !d.revealed) || null;
   }
 
-  function symbolsFor(draw) {
-    if (symbolCache.has(draw.id)) return symbolCache.get(draw.id);
-    let syms;
-    if (!draw.is_blank) {
-      syms = [draw.emoji, draw.emoji, draw.emoji];
-    } else {
-      // 꽝: 두 개만 같은 그림 (아깝게 놓친 느낌)
-      const pool = [...new Set(state.prizes.filter((p) => !p.is_blank).map((p) => p.emoji))];
-      for (const f of FILLER_SYMBOLS) if (pool.length < 3 && !pool.includes(f)) pool.push(f);
-      const a = pool[Math.floor(Math.random() * pool.length)];
-      const others = pool.filter((x) => x !== a);
-      const b = others[Math.floor(Math.random() * others.length)];
-      syms = [a, a, b].sort(() => Math.random() - 0.5);
-    }
-    symbolCache.set(draw.id, syms);
-    return syms;
-  }
-
   function drawBlockReason() {
     const pl = pool();
     if (state.prizes.length === 0) return '상품이 아직 준비되지 않았어요';
     if (pl.remaining === 0) return '복권이 모두 소진됐어요';
-    if (!drawOpen() && !state.me.is_admin) return '아직 뽑기 시간이 아니에요';
+    if (!drawOpen()) return '아직 뽑기 시간이 아니에요';
     if (myBalance() < 1) return '뽑기권이 없어요';
     return null;
   }
@@ -663,7 +643,7 @@
     const pl = pool();
     $('#draw-status').innerHTML = `
       <div class="draw-status ${drawOpen() ? 'open' : ''}">
-        <span>${drawOpen() ? '🟢 뽑기 진행 중' : '⏸ 뽑기 대기 중'}${!drawOpen() && state.me.is_admin ? ' (관리자는 테스트 가능)' : ''}</span>
+        <span>${drawOpen() ? '🟢 뽑기 진행 중' : '⏸ 뽑기 대기 중'}</span>
         <b>남은 복권 ${String(pl.remaining).padStart(3, '0')} / ${String(pl.total).padStart(3, '0')}</b>
       </div>`;
     // 카드는 다시 그리지 않고 숫자만 갱신 (뜯는 중이면 그대로)
@@ -714,7 +694,6 @@
     if (!$st) return;
     const pl = pool();
     const d = drawUI.draw;
-    const syms = d ? symbolsFor(d) : ['❔', '❔', '❔'];
     const no = d ? String(d.id).padStart(6, '0') : '------';
     const revealed = drawUI.mode === 'revealed';
     const peelable = drawUI.mode === 'ready';
@@ -726,17 +705,20 @@
           <div class="pt-title">LUCKY<br><span>TICKET</span></div>
         </div>
         <div class="pt-window" id="pt-window">
-          <div class="pt-rows">
-            ${syms.map((s) => `<div class="pt-row"><span>${esc(s)}</span></div>`).join('')}
+          <div class="pt-prize">
+            <div class="pt-grade">${d ? esc(d.is_blank ? '꽝' : d.grade) : '?'}</div>
+            <div class="pt-emoji">${d ? esc(d.is_blank ? '😢' : d.emoji) : '🎁'}</div>
+            <div class="pt-pname">${d && !d.is_blank ? esc(d.prize_name) : ''}</div>
           </div>
-          <div class="pt-cover ${peelable ? 'peelable' : ''}" id="pt-cover" style="height:${revealed ? 0 : 100}%">
-            <div class="pt-open">${peelable ? 'Open Here!' : ''}</div>
-            <div class="pt-tab">${peelable ? '⬆' : '🎟️'}</div>
+          <div class="pt-cover ${peelable ? 'peelable' : ''}" id="pt-cover" style="width:${revealed ? 0 : 100}%">
+            <div class="pt-cover-bg" id="pt-cover-bg"></div>
+            <div class="pt-tab">${peelable ? '▶' : '🎟️'}</div>
+            <div class="pt-open">${peelable ? 'Open<br>Here!' : ''}</div>
           </div>
         </div>
         <div class="pt-coins" id="pt-coins"></div>
       </div>
-      <div class="pt-result" id="pt-result">${revealed ? resultHtml(d) : (peelable ? '<div class="muted">👆 아래 탭을 위로 밀어서 뜯어보세요</div>' : '')}</div>
+      <div class="pt-result" id="pt-result">${revealed ? resultHtml(d) : (peelable ? '<div class="muted">👉 왼쪽 탭을 오른쪽으로 밀어서 뜯어보세요</div>' : '')}</div>
       ${peelable ? '' : '<button class="btn gold block draw-btn" id="draw-btn" data-action="draw"></button>'}`;
 
     updateDrawButton();
@@ -749,35 +731,37 @@
       : `<div class="res win"><div class="res-big">🎉 ${esc(d.grade)} 당첨!</div><div class="res-prize">${esc(d.emoji)} ${esc(d.prize_name)}</div></div>`;
   }
 
+  // 왼쪽 → 오른쪽으로 뜯기 (덮개는 오른쪽에 붙어 있고 왼쪽부터 줄어듦)
   function bindPeel() {
     const cover = $('#pt-cover');
     const win = $('#pt-window');
-    let startY = null;
+    $('#pt-cover-bg').style.width = `${win.clientWidth}px`;  // 덮개 무늬가 같이 찌그러지지 않게
+    let startX = null;
     let startP = 0;
     let moved = 0;
     let lastRip = 0;
 
     const setP = (p) => {
       drawUI.progress = p;
-      cover.style.height = `${(1 - p) * 100}%`;
+      cover.style.width = `${(1 - p) * 100}%`;
       if (Math.abs(p - lastRip) > 0.06) { lastRip = p; beep('rip'); }
     };
 
     cover.addEventListener('pointerdown', (e) => {
       if (drawUI.mode !== 'ready') return;
-      startY = e.clientY;
+      startX = e.clientX;
       startP = drawUI.progress;
       moved = 0;
-      cover.setPointerCapture(e.pointerId);
+      try { cover.setPointerCapture(e.pointerId); } catch {}
     });
     cover.addEventListener('pointermove', (e) => {
-      if (startY === null) return;
-      moved = Math.max(moved, Math.abs(startY - e.clientY));
-      setP(Math.min(1, Math.max(0, startP + (startY - e.clientY) / win.clientHeight)));
+      if (startX === null) return;
+      moved = Math.max(moved, Math.abs(e.clientX - startX));
+      setP(Math.min(1, Math.max(0, startP + (e.clientX - startX) / win.clientWidth)));
     });
     const end = () => {
-      if (startY === null) return;
-      startY = null;
+      if (startX === null) return;
+      startX = null;
       if (moved < 6 || drawUI.progress > 0.18) animateP(1);
       else animateP(0);
     };
@@ -787,7 +771,7 @@
     function animateP(target) {
       drawUI.mode = target === 1 ? 'peeling' : 'ready';
       const from = drawUI.progress;
-      const dur = Math.max(250, Math.abs(target - from) * 1100);
+      const dur = Math.max(250, Math.abs(target - from) * 1500);
       const t0 = performance.now();
       const stepFn = (t) => {
         const u = Math.min(1, (t - t0) / dur);
@@ -986,7 +970,7 @@
     const open = drawOpen();
     $('#draw-open-text').innerHTML = open
       ? '<b style="color:var(--green)">🟢 뽑기 열림</b><div class="small muted">참가자들이 지금 뽑을 수 있어요</div>'
-      : '<b>⏸ 뽑기 닫힘</b><div class="small muted">관리자만 테스트로 뽑을 수 있어요</div>';
+      : '<b>⏸ 뽑기 닫힘</b><div class="small muted">관리자 포함 아무도 뽑을 수 없어요</div>';
     const $ob = $('#draw-open-btn');
     $ob.textContent = open ? '닫기' : '열기';
     $ob.className = `btn ${open ? 'red' : 'green'}`;

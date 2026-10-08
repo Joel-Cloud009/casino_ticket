@@ -740,8 +740,9 @@ declare
   chosen ticket_prizes;
   v_id bigint;
 begin
+  -- 관리자도 예외 없이, 관리 탭에서 '열기' 해야만 뽑을 수 있음
   select value = 'true' into v_open from ticket_settings where key = 'draw_open';
-  if not coalesce(v_open, false) and not me.is_admin then
+  if not coalesce(v_open, false) then
     raise exception '아직 뽑기 시간이 아니에요.';
   end if;
   if exists (select 1 from ticket_draws where player_id = me.id and not revealed) then
