@@ -232,6 +232,7 @@
         <input class="input" id="join-name" maxlength="20" placeholder="이름" autocomplete="off" required>
         <button class="btn gold block" type="submit">입장하기</button>
         <p class="small muted" style="margin-top:16px">처음 입장한 기기에 이름이 연결돼요.<br>다른 기기로 바꾸려면 관리자에게 기기 초기화를 요청하세요.</p>
+        <a class="small muted" href="stage.html" style="display:inline-block;margin-top:18px">📺 무대 화면으로 보기 (입장 없이)</a>
       </form></div>`;
     const $form = document.getElementById('join-form');
     const $name = document.getElementById('join-name');
