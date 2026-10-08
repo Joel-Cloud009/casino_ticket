@@ -335,6 +335,10 @@
             <input class="input" id="pf-name" maxlength="40" placeholder="예: 무선 이어폰">
             <label for="pf-desc">설명 (선택)</label>
             <input class="input" id="pf-desc" maxlength="200" placeholder="예: 최신형, 색상 랜덤">
+            <label for="pf-image">사진 주소 (선택 · 비우면 이모지)</label>
+            <input class="input" id="pf-image" maxlength="1000" placeholder="prizes/cash.jpg 또는 https://...">
+            <img class="pf-preview hidden" id="pf-preview" alt="">
+
             <div class="row">
               <div style="flex:1"><label for="pf-qty">수량</label><input class="input" id="pf-qty" type="number" inputmode="numeric" min="0" max="10000" value="1"></div>
               <div style="flex:1"><label for="pf-sort">표시 순서</label><input class="input" id="pf-sort" type="number" inputmode="numeric" value="1"></div>
@@ -425,6 +429,7 @@
     $('#room-title').addEventListener('keydown', (e) => {
       if (e.key === 'Enter') handleAction('create-room', {});
     });
+    $('#pf-image').addEventListener('input', updateImagePreview);
     drawUI.mode = 'idle';
     drawUI.draw = null;
     renderData();
@@ -443,6 +448,20 @@
     remaining: state.prizes.reduce((s, p) => s + p.remaining, 0),
   });
   const drawOpen = () => state.settings.draw_open === 'true';
+  // 상품 사진이 있으면 사진, 없으면 이모지 (사진을 못 불러오면 이모지로 대체)
+  const prizeVisual = (prizeId, emoji) => {
+    const url = state.prizes.find((p) => p.id === prizeId)?.image_url;
+    return url
+      ? `<img class="prize-photo" src="${esc(url)}" alt="" onerror="this.replaceWith(document.createTextNode(this.dataset.fallback))" data-fallback="${esc(emoji)}">`
+      : esc(emoji);
+  };
+  function updateImagePreview() {
+    const url = $('#pf-image')?.value.trim();
+    const img = $('#pf-preview');
+    if (!img) return;
+    img.classList.toggle('hidden', !url);
+    if (url) img.src = url;
+  }
   const gradeColor = (prizeId) => {
     const idx = state.prizes.filter((p) => !p.is_blank).findIndex((p) => p.id === prizeId);
     return GRADE_COLORS[Math.max(0, idx) % GRADE_COLORS.length];
@@ -682,7 +701,7 @@
       ? '<div class="empty">아직 뽑은 복권이 없어요.</div>'
       : mine.map((d) => `
         <div class="draw-row ${d.is_blank ? 'blank' : 'win'}">
-          <div class="draw-emoji">${d.is_blank ? '😢' : esc(d.emoji)}</div>
+          <div class="draw-emoji">${d.is_blank ? '😢' : prizeVisual(d.prize_id, d.emoji)}</div>
           <div style="flex:1">
             <div><b>${esc(d.grade)}</b> ${d.is_blank ? '' : esc(d.prize_name)}</div>
             <div class="small muted">${fmtTime(d.revealed_at || d.created_at)}</div>
@@ -718,7 +737,7 @@
         <div class="pt-window" id="pt-window">
           <div class="pt-prize">
             <div class="pt-grade">${d ? esc(d.is_blank ? '꽝' : d.grade) : '?'}</div>
-            <div class="pt-emoji">${d ? esc(d.is_blank ? '😢' : d.emoji) : '🎁'}</div>
+            <div class="pt-emoji">${d ? (d.is_blank ? '😢' : prizeVisual(d.prize_id, d.emoji)) : '🎁'}</div>
             <div class="pt-pname">${d && !d.is_blank ? esc(d.prize_name) : ''}</div>
           </div>
           <div class="pt-cover ${peelable ? 'peelable' : ''}" id="pt-cover" style="width:${revealed ? 0 : 100}%">
@@ -876,7 +895,7 @@
       return `
         <div class="card prize ${left <= 0 ? 'soldout' : ''}" style="--g:${col}">
           <div class="prize-head">
-            <div class="prize-emoji">${esc(p.emoji)}</div>
+            <div class="prize-emoji">${prizeVisual(p.id, p.emoji)}</div>
             <div style="flex:1;min-width:0">
               <span class="grade">${esc(p.grade)}</span>
               <div class="prize-name">${esc(p.name)}</div>
@@ -920,6 +939,8 @@
     $('#pf-emoji').value = p?.emoji ?? '';
     $('#pf-name').value = p?.name ?? '';
     $('#pf-desc').value = p?.description ?? '';
+    $('#pf-image').value = p?.image_url ?? '';
+    updateImagePreview();
     $('#pf-qty').value = p?.quantity ?? 1;
     $('#pf-sort').value = p?.sort ?? (state.prizes.length + 1);
     $('#pf-blank').checked = p?.is_blank ?? false;
@@ -1156,6 +1177,7 @@
           p_name: $('#pf-name').value.trim(),
           p_emoji: $('#pf-emoji').value.trim(),
           p_description: $('#pf-desc').value.trim(),
+          p_image_url: $('#pf-image').value.trim() || null,
           p_quantity: parseInt($('#pf-qty').value, 10),
           p_is_blank: $('#pf-blank').checked,
           p_sort: parseInt($('#pf-sort').value, 10) || 0,

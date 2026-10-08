@@ -45,7 +45,9 @@
     border-radius: 2vh; padding: 1.8vh 2vh; display: grid; grid-template-columns: auto 1fr auto; gap: 1.6vh; align-items: center;
   }
   .prize.soldout { opacity: .45; }
-  .p-emoji { font-size: 7vh; }
+  .p-emoji { font-size: 7vh; width: 10vh; height: 10vh; display: grid; place-items: center; }
+  .p-emoji .photo { width: 100%; height: 100%; object-fit: cover; border-radius: 1.4vh; }
+  .an-emoji .photo { height: 34vh; max-width: 60vw; object-fit: contain; border-radius: 2vh; display: block; margin: 1vh auto; }
   .p-grade { display: inline-block; font-size: 1.8vh; font-weight: 900; background: var(--g); color: #1a1400; padding: .2vh 1vh; border-radius: .8vh; }
   .p-name { font-size: 2.8vh; font-weight: 800; margin-top: .4vh; }
   .p-left { text-align: right; }
@@ -190,6 +192,14 @@
     render();
   }
 
+  // 상품 사진이 있으면 사진, 없으면 이모지
+  function visual(prizeId, emoji) {
+    const url = prizes.find((p) => p.id === prizeId)?.image_url;
+    return url
+      ? `<img class="photo" src="${esc(url)}" alt="" onerror="this.replaceWith(document.createTextNode(this.dataset.fallback))" data-fallback="${esc(emoji)}">`
+      : esc(emoji);
+  }
+
   function gradeColor(prizeId) {
     const idx = prizes.filter((p) => !p.is_blank).findIndex((p) => p.id === prizeId);
     return GRADE_COLORS[Math.max(0, idx) % GRADE_COLORS.length];
@@ -210,7 +220,7 @@
         const left = p.quantity - won.length;
         return `
           <div class="prize ${left <= 0 ? 'soldout' : ''}" style="--g:${GRADE_COLORS[i % GRADE_COLORS.length]}">
-            <div class="p-emoji">${esc(p.emoji)}</div>
+            <div class="p-emoji">${visual(p.id, p.emoji)}</div>
             <div><span class="p-grade">${esc(p.grade)}</span><div class="p-name">${esc(p.name)}</div></div>
             <div class="p-left"><b>${left}</b><span>/ ${p.quantity}개 남음</span></div>
             ${!won.length ? '' : p.announce === false
@@ -244,7 +254,7 @@
       <div class="an-rays"></div>
       <div class="an-body" style="--g:${gradeColor(d.prize_id)}">
         <div class="an-congrats">🎉 축하합니다! 🎉</div>
-        <div class="an-emoji">${esc(d.emoji)}</div>
+        <div class="an-emoji">${visual(d.prize_id, d.emoji)}</div>
         <div class="an-grade">${esc(d.grade)} 당첨</div>
         <div class="an-prize">${esc(d.prize_name)}</div>
         <div class="an-who">${team(d.team)}${esc(d.player_name)}</div>

@@ -393,6 +393,12 @@ button.chip.pick:hover { background: var(--gold); color: var(--gold-ink); }
 .pool-num span { font-size: 18px; color: var(--muted); text-shadow: none; }
 .pool-blank { font-size: 12px; color: var(--muted); text-align: right; }
 
+/* 상품 사진: 이모지 자리를 꽉 채움 */
+.prize-photo { width: 100%; height: 100%; object-fit: cover; border-radius: inherit; display: block; }
+.prize-emoji, .draw-emoji { overflow: hidden; }
+.pt-emoji .prize-photo { width: 150px; height: 120px; object-fit: contain; border-radius: 10px; margin: 0 auto; }
+.pf-preview { width: 120px; height: 120px; object-fit: cover; border-radius: 14px; background: var(--surface-2); }
+
 .card.prize { padding: 14px 16px; }
 .card.prize.soldout { opacity: .45; }
 .prize-head { display: flex; gap: 14px; align-items: center; }
