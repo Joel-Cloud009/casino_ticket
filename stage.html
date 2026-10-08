@@ -1,0 +1,309 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>뽑기 무대 화면</title>
+<link rel="icon" type="image/png" href="icon-192.png">
+<style>
+  :root {
+    --bg: #120a24;
+    --panel: #1d1238;
+    --line: #3a2766;
+    --text: #f5f0ff;
+    --muted: #a597c9;
+    --gold: #ffd43b;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body {
+    background: radial-gradient(ellipse at 50% -10%, #3d1d7a 0%, var(--bg) 60%);
+    color: var(--text); overflow: hidden;
+    font-family: Pretendard, "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
+  }
+  .wrap { height: 100%; display: grid; grid-template-rows: auto 1fr; padding: 2.2vh 2.2vw; gap: 2vh; }
+
+  header { display: flex; align-items: center; justify-content: space-between; }
+  .title { font-size: 5vh; font-weight: 900; font-style: italic; letter-spacing: .02em;
+    color: #fff3b0; text-shadow: 0 .5vh 0 #6b2cc0, 0 0 2vh rgba(255,255,255,.35); }
+  .title small { display: block; font-size: 2vh; font-style: normal; color: var(--muted); letter-spacing: .1em; text-shadow: none; }
+  .status { font-size: 2.2vh; padding: .8vh 1.6vh; border-radius: 99px; background: var(--panel); border: 1px solid var(--line); color: var(--muted); }
+  .status.open { color: #3ecf8e; border-color: #3ecf8e; }
+  .counter { text-align: right; }
+  .counter .label { font-size: 2vh; color: var(--muted); }
+  .counter .num {
+    font-size: 8vh; font-weight: 900; line-height: 1; font-variant-numeric: tabular-nums;
+    background: #6d0a1a; color: #fff; padding: .4vh 2vh; border-radius: 1.6vh;
+    box-shadow: 0 .6vh 0 #3b0510; display: inline-block;
+  }
+  .counter .num span { color: #ffb3bf; font-size: 5vh; }
+
+  main { display: grid; grid-template-columns: 1fr 30vw; gap: 2vw; min-height: 0; }
+  .prizes { display: grid; grid-auto-rows: min-content; grid-template-columns: repeat(auto-fill, minmax(22vw, 1fr)); gap: 1.6vh; align-content: start; overflow: hidden; }
+  .prize {
+    background: var(--panel); border: 1px solid var(--line); border-left: .8vh solid var(--g);
+    border-radius: 2vh; padding: 1.8vh 2vh; display: grid; grid-template-columns: auto 1fr auto; gap: 1.6vh; align-items: center;
+  }
+  .prize.soldout { opacity: .45; }
+  .p-emoji { font-size: 7vh; }
+  .p-grade { display: inline-block; font-size: 1.8vh; font-weight: 900; background: var(--g); color: #1a1400; padding: .2vh 1vh; border-radius: .8vh; }
+  .p-name { font-size: 2.8vh; font-weight: 800; margin-top: .4vh; }
+  .p-left { text-align: right; }
+  .p-left b { font-size: 5vh; color: var(--g); line-height: 1; }
+  .p-left span { display: block; font-size: 1.8vh; color: var(--muted); }
+  .p-winners { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: .8vh; }
+  .p-winners span { font-size: 1.9vh; padding: .4vh 1.2vh; border-radius: 99px; background: rgba(255,255,255,.08); }
+
+  .feed { background: var(--panel); border: 1px solid var(--line); border-radius: 2vh; padding: 2vh; display: flex; flex-direction: column; min-height: 0; }
+  .feed h2 { margin: 0 0 1.4vh; font-size: 2.4vh; color: var(--muted); }
+  .feed-list { display: flex; flex-direction: column; gap: 1vh; overflow: hidden; }
+  .feed-item { display: flex; align-items: center; gap: 1.4vh; padding: 1.2vh 1.4vh; border-radius: 1.4vh; background: rgba(255,255,255,.05); font-size: 2.4vh; animation: slideIn .5s ease; }
+  .feed-item.win { background: rgba(255,212,59,.12); }
+  .feed-item .fe { font-size: 3.4vh; width: 4vh; text-align: center; }
+  .feed-item .fn { flex: 1; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .feed-item .fr { font-weight: 900; }
+  .feed-item.win .fr { color: var(--gold); }
+  .feed-item.blank .fr { color: var(--muted); }
+  @keyframes slideIn { from { transform: translateX(4vw); opacity: 0; } }
+  .team { display: inline-block; font-size: .8em; font-weight: 800; padding: .1em .5em; border-radius: .4em; margin-right: .3em;
+    background: color-mix(in srgb, var(--c) 25%, transparent); color: var(--c); }
+  .empty { color: var(--muted); font-size: 2.2vh; text-align: center; padding: 4vh 0; }
+
+  /* 당첨 발표 */
+  #announce {
+    position: fixed; inset: 0; z-index: 10; display: grid; place-items: center; text-align: center;
+    background: radial-gradient(circle at 50% 45%, rgba(255,212,59,.35), rgba(18,10,36,.96) 60%);
+    animation: fadeIn .35s ease;
+  }
+  #announce.hide { animation: fadeOut .5s ease forwards; }
+  @keyframes fadeIn { from { opacity: 0; } }
+  @keyframes fadeOut { to { opacity: 0; } }
+  .an-rays { position: absolute; width: 140vh; height: 140vh; left: 50%; top: 45%; margin: -70vh 0 0 -70vh;
+    background: repeating-conic-gradient(rgba(255,212,59,.13) 0 10deg, transparent 10deg 20deg);
+    animation: spin 18s linear infinite; border-radius: 50%; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .an-body { position: relative; }
+  .an-congrats { font-size: 6vh; font-weight: 900; color: #fff; text-shadow: 0 0 3vh rgba(255,212,59,.8); animation: pop .6s cubic-bezier(.2, 1.5, .4, 1); }
+  .an-emoji { font-size: 22vh; line-height: 1.1; animation: pop .7s .1s cubic-bezier(.2, 1.5, .4, 1) both; filter: drop-shadow(0 0 4vh rgba(255,212,59,.7)); }
+  .an-grade { display: inline-block; font-size: 5vh; font-weight: 900; background: var(--g, var(--gold)); color: #1a1400; padding: .6vh 3vh; border-radius: 1.6vh; margin-top: 1vh; animation: pop .6s .25s cubic-bezier(.2, 1.5, .4, 1) both; }
+  .an-prize { font-size: 5vh; font-weight: 800; margin-top: 1.4vh; animation: pop .6s .35s cubic-bezier(.2, 1.5, .4, 1) both; }
+  .an-who { font-size: 9vh; font-weight: 900; margin-top: 2vh; color: var(--gold); animation: pop .7s .5s cubic-bezier(.2, 1.5, .4, 1) both; }
+  .an-who .team { font-size: .5em; vertical-align: middle; }
+  @keyframes pop { from { transform: scale(.3); opacity: 0; } }
+  .coin {
+    position: fixed; top: -6vh; width: 5vh; height: 5vh; border-radius: 50%; z-index: 11; pointer-events: none;
+    background: radial-gradient(circle at 35% 30%, #fff6c2, #ffcc33 45%, #d99a00 75%, #9c6b00);
+    box-shadow: inset 0 0 0 .3vh #b47c00;
+    animation: fall linear forwards;
+  }
+  @keyframes fall { to { transform: translateY(115vh) rotate(var(--r)); } }
+
+  .sound-btn {
+    position: fixed; right: 1.6vw; bottom: 2vh; z-index: 20; border: 0; cursor: pointer;
+    background: var(--panel); color: var(--muted); padding: 1vh 1.6vh; border-radius: 1.2vh; font: inherit; font-size: 1.8vh;
+    border: 1px solid var(--line);
+  }
+  .sound-btn.on { color: var(--gold); border-color: var(--gold); }
+  body.idle .sound-btn { opacity: 0; transition: opacity .5s; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="title">LUCKY DRAW<small>뽑기권 럭키 드로우</small></div>
+    <div class="status" id="status">연결 중…</div>
+    <div class="counter">
+      <div class="label">상자에 남은 복권</div>
+      <div class="num" id="counter">---<span> / ---</span></div>
+    </div>
+  </header>
+  <main>
+    <div class="prizes" id="prizes"></div>
+    <aside class="feed">
+      <h2>실시간 결과</h2>
+      <div class="feed-list" id="feed"></div>
+    </aside>
+  </main>
+</div>
+<button class="sound-btn" id="sound-btn">🔇 소리 켜기</button>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<script>
+(() => {
+  'use strict';
+  const cfg = window.TICKET_CONFIG;
+  const sb = window.supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_ANON_KEY, { auth: { persistSession: false } });
+  const TEAM_COLORS = ['#ff6b6b', '#4dabf7', '#51cf66', '#fcc419', '#cc5de8', '#ff922b', '#22b8cf', '#f06595'];
+  const GRADE_COLORS = ['#f2c14e', '#c0a6ff', '#6cb4ff', '#3ecf8e', '#ff922b', '#f06595'];
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const team = (t) => (t ? `<span class="team" style="--c:${TEAM_COLORS[(t - 1) % 8]}">${t}팀</span>` : '');
+  const pad = (n) => String(n).padStart(3, '0');
+
+  let prizes = [];
+  let draws = [];          // 공개된(뜯은) 결과만
+  let open = false;
+  let seen = null;         // 이미 본 결과 id (처음 불러온 것은 발표하지 않음)
+  const queue = [];
+  let showing = false;
+  let sound = false;
+
+  // ---------------- 데이터 ----------------
+  async function load() {
+    const [pz, dr, st] = await Promise.all([
+      sb.from('ticket_prizes').select('*').order('sort').order('id'),
+      sb.from('ticket_draws').select('id,player_name,team,prize_id,grade,prize_name,emoji,is_blank,revealed_at')
+        .eq('revealed', true).order('revealed_at', { ascending: false }).limit(2000),
+      sb.from('ticket_settings').select('*'),
+    ]);
+    if (pz.error || dr.error || st.error) { $('status').textContent = '⚠ 연결 오류'; return; }
+    prizes = pz.data;
+    draws = dr.data;
+    open = st.data.some((s) => s.key === 'draw_open' && s.value === 'true');
+
+    if (seen === null) {
+      seen = new Set(draws.map((d) => d.id));
+    } else {
+      // 오래된 것부터 발표
+      const fresh = draws.filter((d) => !seen.has(d.id)).reverse();
+      for (const d of fresh) {
+        seen.add(d.id);
+        if (!d.is_blank) queue.push(d);
+      }
+      if (fresh.length) beep(fresh.some((d) => !d.is_blank) ? null : 'blip');
+      nextAnnounce();
+    }
+    render();
+  }
+
+  function gradeColor(prizeId) {
+    const idx = prizes.filter((p) => !p.is_blank).findIndex((p) => p.id === prizeId);
+    return GRADE_COLORS[Math.max(0, idx) % GRADE_COLORS.length];
+  }
+
+  function render() {
+    const total = prizes.reduce((s, p) => s + p.quantity, 0);
+    const remaining = prizes.reduce((s, p) => s + p.remaining, 0);
+    $('counter').innerHTML = `${pad(remaining)}<span> / ${pad(total)}</span>`;
+    $('status').textContent = open ? '🟢 뽑기 진행 중' : '⏸ 곧 뽑기가 시작됩니다';
+    $('status').className = `status ${open ? 'open' : ''}`;
+
+    const real = prizes.filter((p) => !p.is_blank);
+    $('prizes').innerHTML = real.length === 0
+      ? '<div class="empty">상품 준비 중…</div>'
+      : real.map((p, i) => {
+        const won = draws.filter((d) => d.prize_id === p.id);
+        const left = p.quantity - won.length;
+        return `
+          <div class="prize ${left <= 0 ? 'soldout' : ''}" style="--g:${GRADE_COLORS[i % GRADE_COLORS.length]}">
+            <div class="p-emoji">${esc(p.emoji)}</div>
+            <div><span class="p-grade">${esc(p.grade)}</span><div class="p-name">${esc(p.name)}</div></div>
+            <div class="p-left"><b>${left}</b><span>/ ${p.quantity}개 남음</span></div>
+            ${won.length ? `<div class="p-winners">${won.map((d) => `<span>${team(d.team)}${esc(d.player_name)}</span>`).join('')}</div>` : ''}
+          </div>`;
+      }).join('');
+
+    $('feed').innerHTML = draws.length === 0
+      ? '<div class="empty">아직 결과가 없어요</div>'
+      : draws.slice(0, 14).map((d) => `
+        <div class="feed-item ${d.is_blank ? 'blank' : 'win'}">
+          <div class="fe">${d.is_blank ? '😢' : esc(d.emoji)}</div>
+          <div class="fn">${team(d.team)}${esc(d.player_name)}</div>
+          <div class="fr">${esc(d.grade)}</div>
+        </div>`).join('');
+  }
+
+  // ---------------- 당첨 발표 ----------------
+  function nextAnnounce() {
+    if (showing || !queue.length) return;
+    showing = true;
+    const d = queue.shift();
+    const el = document.createElement('div');
+    el.id = 'announce';
+    el.innerHTML = `
+      <div class="an-rays"></div>
+      <div class="an-body" style="--g:${gradeColor(d.prize_id)}">
+        <div class="an-congrats">🎉 축하합니다! 🎉</div>
+        <div class="an-emoji">${esc(d.emoji)}</div>
+        <div class="an-grade">${esc(d.grade)} 당첨</div>
+        <div class="an-prize">${esc(d.prize_name)}</div>
+        <div class="an-who">${team(d.team)}${esc(d.player_name)}</div>
+      </div>`;
+    document.body.appendChild(el);
+    beep('fanfare');
+    coinRain();
+    setTimeout(() => {
+      el.classList.add('hide');
+      setTimeout(() => { el.remove(); showing = false; nextAnnounce(); }, 500);
+    }, queue.length ? 5000 : 7000);
+  }
+
+  function coinRain() {
+    for (let i = 0; i < 60; i++) {
+      const c = document.createElement('div');
+      c.className = 'coin';
+      c.style.left = `${Math.random() * 100}vw`;
+      c.style.setProperty('--r', `${Math.random() * 1080 - 540}deg`);
+      c.style.animationDuration = `${1.8 + Math.random() * 1.8}s`;
+      c.style.animationDelay = `${Math.random() * 1.2}s`;
+      document.body.appendChild(c);
+      setTimeout(() => c.remove(), 5000);
+    }
+  }
+
+  // ---------------- 소리 (브라우저 정책상 한 번 클릭해야 켜짐) ----------------
+  let ac = null;
+  function beep(kind) {
+    if (!sound || !kind) return;
+    try {
+      ac = ac || new AudioContext();
+      const now = ac.currentTime;
+      const tone = (f, s, len, vol, type = 'triangle') => {
+        const o = ac.createOscillator(), g = ac.createGain();
+        o.type = type; o.frequency.value = f;
+        g.gain.setValueAtTime(vol, now + s);
+        g.gain.exponentialRampToValueAtTime(0.0001, now + s + len);
+        o.connect(g).connect(ac.destination);
+        o.start(now + s); o.stop(now + s + len + 0.02);
+      };
+      if (kind === 'fanfare') {
+        [392, 523, 659, 784].forEach((f, i) => tone(f, i * 0.12, 0.2, 0.15));
+        [1047, 1319, 1568].forEach((f) => tone(f, 0.5, 1.0, 0.1));
+      }
+      if (kind === 'blip') tone(660, 0, 0.12, 0.06, 'sine');
+    } catch {}
+  }
+  $('sound-btn').addEventListener('click', () => {
+    sound = !sound;
+    $('sound-btn').textContent = sound ? '🔊 소리 켜짐' : '🔇 소리 켜기';
+    $('sound-btn').classList.toggle('on', sound);
+    if (sound) { ac = ac || new AudioContext(); ac.resume(); }
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'f' || e.key === 'F') {
+      if (document.fullscreenElement) document.exitFullscreen(); else document.documentElement.requestFullscreen?.();
+    }
+  });
+  // 마우스를 안 움직이면 버튼 숨김
+  let idleTimer;
+  document.addEventListener('mousemove', () => {
+    document.body.classList.remove('idle');
+    clearTimeout(idleTimer);
+    idleTimer = setTimeout(() => document.body.classList.add('idle'), 3000);
+  });
+
+  // ---------------- 실시간 ----------------
+  let t = null;
+  const schedule = () => { clearTimeout(t); t = setTimeout(load, 200); };
+  const ch = sb.channel('ticket-stage');
+  for (const table of ['ticket_prizes', 'ticket_draws', 'ticket_settings']) {
+    ch.on('postgres_changes', { event: '*', schema: 'public', table }, schedule);
+  }
+  ch.subscribe();
+  setInterval(load, 5000);
+  load();
+})();
+</script>
+</body>
+</html>
