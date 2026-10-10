@@ -510,6 +510,9 @@ create table if not exists ticket_prizes (
 alter table ticket_prizes add column if not exists announce boolean not null default true;
 -- 상품 사진 (없으면 이모지 표시). 사이트 안 경로(prizes/xxx.jpg) 또는 인터넷 주소
 alter table ticket_prizes add column if not exists image_url text;
+-- 고급 상품: 한 사람이 고급 상품을 이미 받았으면 다음 뽑기에서 고급 상품은 제외
+-- (단, 일반 상품이 다 떨어지면 상자를 다 비우기 위해 제외하지 않음)
+alter table ticket_prizes add column if not exists premium boolean not null default false;
 
 -- 뽑기 결과. revealed = 본인이 복권을 다 뜯었는지 (무대 화면은 뜯은 것만 표시)
 create table if not exists ticket_draws (
@@ -653,10 +656,11 @@ end $$;
 -- p_id 가 null 이면 추가, 아니면 수정
 drop function if exists ticket_admin_save_prize(text, bigint, text, text, text, text, int, boolean, int);
 drop function if exists ticket_admin_save_prize(text, bigint, text, text, text, text, int, boolean, int, boolean);
+drop function if exists ticket_admin_save_prize(text, bigint, text, text, text, text, int, boolean, int, boolean, text);
 create or replace function ticket_admin_save_prize(
   p_token text, p_id bigint, p_grade text, p_name text, p_emoji text,
   p_description text, p_quantity int, p_is_blank boolean, p_sort int, p_announce boolean default true,
-  p_image_url text default null)
+  p_image_url text default null, p_premium boolean default false)
 returns bigint
 language plpgsql security definer set search_path = public as $$
 declare
@@ -672,11 +676,11 @@ begin
   end if;
 
   if p_id is null then
-    insert into ticket_prizes (grade, name, emoji, description, quantity, remaining, is_blank, sort, announce, image_url)
+    insert into ticket_prizes (grade, name, emoji, description, quantity, remaining, is_blank, sort, announce, image_url, premium)
     values (v_grade, left(btrim(coalesce(p_name, '')), 40), coalesce(nullif(btrim(p_emoji), ''), '🎁'),
             nullif(left(btrim(coalesce(p_description, '')), 200), ''), p_quantity, p_quantity,
             coalesce(p_is_blank, false), coalesce(p_sort, 0), coalesce(p_announce, true),
-            nullif(left(btrim(coalesce(p_image_url, '')), 1000), ''))
+            nullif(left(btrim(coalesce(p_image_url, '')), 1000), ''), coalesce(p_premium, false))
     returning id into v_id;
     perform ticket__log('prize', null, me.id, null, 0, '상품 추가: ' || v_grade);
     return v_id;
@@ -698,7 +702,8 @@ begin
     is_blank = coalesce(p_is_blank, false),
     sort = coalesce(p_sort, 0),
     announce = coalesce(p_announce, true),
-    image_url = nullif(left(btrim(coalesce(p_image_url, '')), 1000), '')
+    image_url = nullif(left(btrim(coalesce(p_image_url, '')), 1000), ''),
+    premium = coalesce(p_premium, false)
   where id = p_id;
   perform ticket__log('prize', null, me.id, null, 0, '상품 수정: ' || v_grade);
   return p_id;
@@ -742,6 +747,7 @@ declare
   v_bal int;
   v_total int;
   v_pick int;
+  v_skip_premium boolean;
   pr ticket_prizes;
   chosen ticket_prizes;
   v_id bigint;
@@ -763,8 +769,19 @@ begin
   select coalesce(sum(remaining), 0) into v_total from ticket_prizes;
   if v_total = 0 then raise exception '복권이 모두 소진됐어요.'; end if;
 
+  -- 고급 상품을 이미 받았으면 고급 상품은 빼고 뽑음 (일반 상품이 남아 있을 때만)
+  v_skip_premium := exists (
+      select 1 from ticket_draws d join ticket_prizes p on p.id = d.prize_id
+       where d.player_id = me.id and p.premium)
+    and exists (select 1 from ticket_prizes where remaining > 0 and not premium);
+  if v_skip_premium then
+    select coalesce(sum(remaining), 0) into v_total from ticket_prizes where not premium;
+  end if;
+
   v_pick := floor(random() * v_total)::int;
-  for pr in select * from ticket_prizes where remaining > 0 order by sort, id loop
+  for pr in select * from ticket_prizes
+             where remaining > 0 and (not v_skip_premium or not premium)
+             order by sort, id loop
     if v_pick < pr.remaining then chosen := pr; exit; end if;
     v_pick := v_pick - pr.remaining;
   end loop;
@@ -778,7 +795,7 @@ begin
 
   return json_build_object(
     'id', v_id, 'prize_id', chosen.id, 'grade', chosen.grade, 'prize_name', chosen.name, 'emoji', chosen.emoji,
-    'is_blank', chosen.is_blank, 'remaining', v_total - 1,
+    'is_blank', chosen.is_blank, 'remaining', (select coalesce(sum(remaining), 0) from ticket_prizes),
     'total', (select coalesce(sum(quantity), 0) from ticket_prizes));
 end $$;
 
@@ -797,7 +814,7 @@ grant execute on function ticket_admin_import_teams(text, jsonb)                
 grant execute on function ticket_admin_grant_ranks(text, jsonb, text)                          to anon, authenticated;
 grant execute on function ticket_admin_grant_team(text, smallint, int, text)                   to anon, authenticated;
 grant execute on function ticket_admin_set_draw_open(text, boolean)                            to anon, authenticated;
-grant execute on function ticket_admin_save_prize(text, bigint, text, text, text, text, int, boolean, int, boolean, text) to anon, authenticated;
+grant execute on function ticket_admin_save_prize(text, bigint, text, text, text, text, int, boolean, int, boolean, text, boolean) to anon, authenticated;
 grant execute on function ticket_admin_delete_prize(text, bigint)                              to anon, authenticated;
 grant execute on function ticket_admin_set_claimed(text, bigint, boolean)                      to anon, authenticated;
 grant execute on function ticket_draw(text)                                                    to anon, authenticated;

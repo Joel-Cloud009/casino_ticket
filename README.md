@@ -83,23 +83,17 @@ git checkout dev
 ### 상품 넣기 (상품이 비어 있을 때 한 번만)
 
 ```sql
-insert into ticket_prizes (grade, name, emoji, quantity, remaining, sort, announce) values
-  ('A상', '현금 20만원', '💰',   1,   1, 1, true),
-  ('B상', '주류',        '🍾',   1,   1, 2, true),
-  ('C상', '초콜릿',      '🍫',   2,   2, 3, true),
-  ('D상', '현금 5만원',  '💵',   1,   1, 4, true),
-  ('E상', '스팸세트',    '🥫',   2,   2, 5, true),
-  ('F상', '현금 3만원',  '💵',   3,   3, 6, true),
-  ('G상', '현금 1만원',  '💵',  10,  10, 7, true),
-  ('H상', '젤리',        '🍬', 180, 180, 8, false);
-
-update ticket_prizes set image_url = 'prizes/cash-200k.jpg' where grade = 'A상';
-update ticket_prizes set image_url = 'prizes/liquor.jpg'    where grade = 'B상';
-update ticket_prizes set image_url = 'prizes/chocolate.jpg' where grade = 'C상';
-update ticket_prizes set image_url = 'prizes/cash-50k.jpg'  where grade = 'D상';
-update ticket_prizes set image_url = 'prizes/cash-30k.jpg'  where grade = 'F상';
-update ticket_prizes set image_url = 'prizes/cash-10k.jpg'  where grade = 'G상';
-update ticket_prizes set image_url = 'prizes/jelly.jpg'     where grade = 'H상';
+-- 워크샵 경품 시트 기준 (C상 현금 10만원은 비어퐁 전용이라 뽑기에 없음). 합계 200
+-- premium = 고급 상품: 한 사람이 고급 상품을 2개 이상 받지 않음 (일반 상품이 다 떨어지면 예외)
+insert into ticket_prizes (grade, name, emoji, quantity, remaining, sort, announce, premium, image_url) values
+  ('A상', '현금 20만원', '💰',   1,   1, 1, true,  true,  'prizes/cash-200k.jpg'),
+  ('B상', '주류',        '🍾',   1,   1, 2, true,  true,  'prizes/liquor.jpg'),
+  ('D상', '초콜릿',      '🍫',   2,   2, 3, true,  true,  'prizes/chocolate.jpg'),
+  ('E상', '현금 5만원',  '💵',   1,   1, 4, true,  true,  'prizes/cash-50k.jpg'),
+  ('F상', '스팸',        '🥫',   2,   2, 5, true,  false, null),
+  ('G상', '현금 3만원',  '💵',   3,   3, 6, true,  false, 'prizes/cash-30k.jpg'),
+  ('H상', '현금 1만원',  '💵',  10,  10, 7, true,  false, 'prizes/cash-10k.jpg'),
+  ('I상', '젤리',        '🍬', 180, 180, 8, false, false, 'prizes/jelly.jpg');
 ```
 
 상품 이름·수량·사진·무대 발표 여부는 이후 앱의 **상품 탭 → 수정**에서 바꾸면 됨 (배포 불필요).
@@ -128,6 +122,7 @@ update ticket_prizes set image_url = 'prizes/jelly.jpg'     where grade = 'H상'
 - 상자 전체 복권 수 = 모든 상품 수량의 합. 뽑을 때마다 남은 수에 비례한 확률로 1장 → 상품 수량이 정확히 맞아떨어짐
 - 결과는 뽑는 순간 서버에서 정해지고, **무대에는 본인이 다 뜯었을 때** 공개
 - 무대 발표가 꺼진 상품(예: 젤리)은 전체 화면 발표 없이 실시간 목록에만
+- **고급 상품**(상품 탭 → 수정에서 체크)을 이미 받은 사람은 다음 뽑기에서 고급 상품이 빠짐. 단 일반 상품이 다 떨어지면 상자를 다 비우기 위해 고급 상품도 나옴
 
 ## 부정 방지
 
