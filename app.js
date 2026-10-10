@@ -12,7 +12,7 @@
   const svg = (d, w = 22) => `<svg width="${w}" height="${w}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
   const ICON = {
     rooms: svg('<rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="8.5" cy="8.5" r="1.2"/><circle cx="15.5" cy="15.5" r="1.2"/><circle cx="12" cy="12" r="1.2"/>'),
-    board: svg('<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>'),
+    home: svg('<path d="M3 11 12 4l9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/>'),
     draw: svg('<path d="M3 7a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v3a2 2 0 0 0 0 4v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-3a2 2 0 0 0 0-4z"/>'),
     prizes: svg('<rect x="3" y="8" width="18" height="13" rx="2"/><path d="M12 8v13M3 12h18M12 8S10 3 7.5 4.5 9 8 12 8zM12 8s2-5 4.5-3.5S15 8 12 8z"/>'),
     logs: svg('<path d="M6 3h12v18l-3-2-3 2-3-2-3 2zM9 8h6M9 12h6"/>'),
@@ -22,6 +22,36 @@
     lock: svg('<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>', 13),
     trash: svg('<path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/>', 16),
   };
+
+  // 워크샵 배너 (입장 화면 · 홈 공통): 대부도 바다 위 노을
+  const WS_BANNER = `
+    <div class="ws-banner">
+      <svg class="ws-art" viewBox="0 0 340 190" preserveAspectRatio="xMaxYMax slice" aria-hidden="true">
+        <defs>
+          <linearGradient id="ws-sun" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#FBE6B8"/><stop offset=".55" stop-color="#E8C27A"/><stop offset="1" stop-color="#E07A6B"/>
+          </linearGradient>
+          <radialGradient id="ws-glow"><stop offset="0" stop-color="#E8C27A" stop-opacity=".35"/><stop offset="1" stop-color="#E8C27A" stop-opacity="0"/></radialGradient>
+          <linearGradient id="ws-sea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2E2250"/><stop offset="1" stop-color="#120E20"/></linearGradient>
+          <mask id="ws-stripes"><rect width="340" height="190" fill="#fff"/><rect y="104" width="340" height="3" fill="#000"/><rect y="114" width="340" height="4" fill="#000"/><rect y="123" width="340" height="5" fill="#000"/></mask>
+        </defs>
+        <circle cx="262" cy="130" r="120" fill="url(#ws-glow)"/>
+        <g fill="#F4F1FA" opacity=".55"><circle cx="40" cy="30" r="1"/><circle cx="120" cy="18" r="1.2"/><circle cx="190" cy="44" r="1"/><circle cx="318" cy="22" r="1.2"/><circle cx="84" cy="64" r=".8"/></g>
+        <path d="M204 132a58 58 0 0 1 116 0z" fill="url(#ws-sun)" mask="url(#ws-stripes)"/>
+        <path d="M138 132q22-20 44-9 12-8 28-1 10 4 16 10z" fill="#1A1430"/>
+        <rect y="132" width="340" height="58" fill="url(#ws-sea)"/>
+        <g stroke="#E8C27A" stroke-linecap="round">
+          <path d="M228 140h68" stroke-width="2.4" opacity=".7"/><path d="M240 149h44" stroke-width="2" opacity=".5"/>
+          <path d="M250 158h24" stroke-width="1.6" opacity=".35"/><path d="M256 166h12" stroke-width="1.4" opacity=".25"/>
+        </g>
+        <path d="M0 176q20-6 40 0t40 0 40 0 40 0 40 0 40 0 40 0 40 0 40 0" fill="none" stroke="#F4F1FA" stroke-opacity=".08" stroke-width="1.5"/>
+      </svg>
+      <div class="ws-text">
+        <div class="ws-org">SC사업본부</div>
+        <h1 class="ws-title">대부도 워크샵</h1>
+        <div class="ws-meta"><span class="ws-year">2026</span><span>10.15 – 10.16</span></div>
+      </div>
+    </div>`;
 
   const state = {
     token: null,
@@ -34,11 +64,14 @@
     settings: {},
     prizes: [],
     draws: [],
-    tab: 'rooms',
+    tab: 'board',
     picking: null,       // 승자 선택 중인 방 id
     onlyMine: false,
     live: false,
     seenDraws: null,     // 최근 당첨 목록에서 새로 들어온 줄만 반짝이게
+    seenRooms: null,     // 게임방: 새로 생긴 방 / 새로 건 사람 / 바뀐 판돈만 애니메이션
+    seenBets: new Set(),
+    prevPots: new Map(),
     editingPrize: null,
   };
 
@@ -238,9 +271,9 @@
   function renderJoin() {
     $app.innerHTML = `
       <div class="center-screen"><form class="join" id="join-form">
-        <div class="logo">${svg('<path d="M3 7a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v3a2 2 0 0 0 0 4v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-3a2 2 0 0 0 0-4z"/><path d="M15 5v14" stroke-dasharray="2 2"/>', 56)}</div>
-        <div class="join-kicker">LUCKY TICKET</div>
-        <h1>뽑기권 카지노</h1>
+        ${WS_BANNER}
+        <div class="join-kicker">LUCKY DRAW</div>
+        <h1>럭키 드로우</h1>
         <p>이름을 입력하고 입장하세요</p>
         <input class="input" id="join-name" maxlength="20" placeholder="이름" autocomplete="off" required>
         <button class="btn gold block" type="submit">입장하기</button>
@@ -317,7 +350,7 @@
       </section>
 
       <section data-view="board">
-        <h2 class="page-title">당첨 현황</h2>
+        ${WS_BANNER}
         <div class="hero" id="hero"></div>
         <div class="section-head"><span>팀별 당첨</span><small>주요 상품 수 · 뽑은 장수</small></div>
         <div class="team-bars" id="team-summary"></div>
@@ -492,7 +525,7 @@
 
   function renderData() {
     if (!state.me || !$('#tabs')) return;
-    if (state.tab === 'admin' && !state.me.is_admin) state.tab = 'rooms';
+    if (state.tab === 'admin' && !state.me.is_admin) state.tab = 'board';
     renderHeader();
     renderTabs();
     renderRooms();
@@ -528,7 +561,8 @@
   }
 
   function renderTabs() {
-    const tabs = [['rooms', ICON.rooms, '게임'], ['board', ICON.board, '현황'], ['draw', ICON.draw, '뽑기'], ['prizes', ICON.prizes, '상품'], ['logs', ICON.logs, '기록']];
+    // 게임방 탭은 숨김 (기능·DB 는 그대로). 다시 쓰려면 맨 앞에 ['rooms', ICON.rooms, '게임'] 추가
+    const tabs = [['board', ICON.home, '홈'], ['draw', ICON.draw, '뽑기'], ['prizes', ICON.prizes, '상품'], ['logs', ICON.logs, '기록']];
     if (state.me.is_admin) tabs.push(['admin', ICON.admin, '관리']);
     $('#tabs').innerHTML = tabs.map(([k, icon, label]) =>
       `<button class="tab ${state.tab === k ? 'active' : ''}" data-action="tab" data-tab="${k}">
@@ -545,6 +579,8 @@
 
     const active = state.rooms.filter(isActive);
     if (state.picking && !active.some((r) => r.id === state.picking)) state.picking = null;
+    const first = state.seenRooms === null;
+    state.seenRooms = state.seenRooms || new Set();
 
     $('#rooms-active').innerHTML = active.length === 0
       ? `<div class="card empty">진행 중인 게임이 없어요.${me.is_admin ? '<br>위에서 방을 만들어 보세요.' : ''}</div>`
@@ -552,12 +588,20 @@
         const roomBets = state.bets.filter((b) => b.room_id === r.id);
         const mine = roomBets.some((b) => b.player_id === me.id);
         const picking = state.picking === r.id;
+        const enter = !first && !state.seenRooms.has(r.id);
+        const tick = state.prevPots.has(r.id) && state.prevPots.get(r.id) !== roomBets.length;
 
+        const chip = (b) => {
+          const p = state.players.find((x) => x.id === b.player_id);
+          const pop = !first && !state.seenBets.has(`${r.id}/${b.player_id}`) ? ' pop' : '';
+          const ini = `<i class="ini" style="--c:${p?.team ? teamColor(p.team) : '#8C84A6'}">${esc([...nameOf(b.player_id)][0] || '?')}</i>`;
+          return picking
+            ? `<button class="chip pick${pop}" data-action="pick-winner" data-room="${r.id}" data-player="${b.player_id}">${ini}${esc(nameOf(b.player_id))}</button>`
+            : `<span class="chip ${b.player_id === me.id ? 'mine' : ''}${pop}">${ini}${esc(nameOf(b.player_id))}</span>`;
+        };
         const chips = roomBets.length === 0
           ? '<span class="muted small">아직 아무도 걸지 않았어요.</span>'
-          : roomBets.map((b) => picking
-            ? `<button class="chip pick" data-action="pick-winner" data-room="${r.id}" data-player="${b.player_id}">${esc(nameOf(b.player_id))}</button>`
-            : `<span class="chip ${b.player_id === me.id ? 'mine' : ''}">${esc(nameOf(b.player_id))}</span>`).join('');
+          : roomBets.map(chip).join('');
 
         let actions = '';
         if (r.status === 'open') {
@@ -584,19 +628,24 @@
           ${picking ? '<div class="pick-hint">👆 위 참가자 중 승자를 눌러주세요</div>' : ''}` : '';
 
         return `
-          <div class="card">
+          <div class="card room ${r.status}${enter ? ' enter' : ''}">
             <div class="room-head">
               <div>
                 <div class="room-state ${r.status}"><i></i>${r.status === 'open' ? '베팅 중' : '마감'} · ${roomBets.length}명 참여</div>
                 <div class="room-title">${esc(r.title)}</div>
               </div>
-              <div class="pot"><div class="unit">판돈</div><div class="num">${roomBets.length}</div></div>
+              <div class="pot${tick ? ' tick' : ''}"><div class="unit">판돈</div><div class="num">${roomBets.length}</div></div>
             </div>
             <div class="chips">${chips}</div>
             <div class="room-actions">${actions}</div>
             ${admin}
           </div>`;
       }).join('');
+    active.forEach((r) => {
+      state.seenRooms.add(r.id);
+      state.prevPots.set(r.id, state.bets.filter((b) => b.room_id === r.id).length);
+    });
+    state.seenBets = new Set(state.bets.map((b) => `${b.room_id}/${b.player_id}`));
 
     const done = state.rooms.filter((r) => !isActive(r))
       .sort((a, b) => String(b.closed_at).localeCompare(String(a.closed_at)))
@@ -660,7 +709,7 @@
     if (s) {
       const drawn = s.drawn ?? 0;
       const ok = s.issued === s.held + s.staked + drawn;
-      const detail = `보유 ${s.held} + 판돈 ${s.staked} + 뽑기 ${drawn}`;
+      const detail = `보유 ${s.held}${s.staked ? ` + 판돈 ${s.staked}` : ''} + 뽑기 ${drawn}`;
       $('#integrity').innerHTML = ok
         ? `<div class="integrity ok">${ICON.check} 총 발행 ${s.issued}장 = ${detail} · 정합성 확인됨</div>`
         : `<div class="integrity bad">⚠ 수량 불일치 · 총 발행 ${s.issued}장 ≠ ${detail}</div>`;
