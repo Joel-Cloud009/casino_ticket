@@ -16,6 +16,10 @@ SC사업본부 2026 대부도 워크샵(10.15–16)용 뽑기 웹앱. 팀 게임
 
 모든 쓰기는 `schema.sql` 의 `security definer` 함수(`ticket_*`)로만 한다. 클라이언트는 기기 토큰(`p_token`)을 넘기고, 서버가 관리자 여부·잔액·정합성을 검사한다. 테이블에 직접 쓰는 코드를 만들지 말 것.
 
+## 작업 시작 시
+
+`HANDOFF.md` 가 있으면 먼저 읽고 "이어서 할 일"을 사용자에게 요약해 준다. 특히 **배포 전 `schema.sql` 재실행 여부**를 확인한다.
+
 ## 브랜치와 배포 (중요)
 
 - **작업 시작 전 항상** `git branch --show-current` 로 확인하고, `dev` 가 아니면 `git checkout dev` (없으면 `git checkout -b dev origin/dev`) 후 `git pull` 부터 한다. 사용자에게 따로 묻지 않아도 된다.

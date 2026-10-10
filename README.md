@@ -71,6 +71,7 @@ git checkout dev
 | `print/` | 참가자용 QR 코드·인쇄 포스터 |
 | `manifest.json`, `icon-*.png` | 홈 화면에 추가할 때 앱 이름·아이콘 |
 | `CHANGELOG.md` | 변경 기록 (무엇을 왜 바꿨는지) |
+| `HANDOFF.md` | **이어서 할 일** (작업 시작 전에 먼저 읽기) |
 
 ---
 
