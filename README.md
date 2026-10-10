@@ -70,6 +70,7 @@ git checkout dev
 | `prizes/` | 상품 사진 |
 | `print/` | 참가자용 QR 코드·인쇄 포스터 |
 | `manifest.json`, `icon-*.png` | 홈 화면에 추가할 때 앱 이름·아이콘 |
+| `CHANGELOG.md` | 변경 기록 (무엇을 왜 바꿨는지) |
 
 ---
 
