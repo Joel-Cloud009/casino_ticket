@@ -68,6 +68,7 @@ git checkout dev
 | `config.js` | Supabase 주소·공개 키 (`service_role` 키는 절대 넣지 말 것) |
 | `schema.sql` | DB 구조·규칙·함수 전부 (여러 번 실행해도 안전) |
 | `prizes/` | 상품 사진 |
+| `assets/` | 디자인 리소스 (버튼·패널·티켓·뽑기 연출·무대). 설명은 `assets/README.md` |
 | `print/` | 참가자용 QR 코드·인쇄 포스터 |
 | `manifest.json`, `icon-*.png` | 홈 화면에 추가할 때 앱 이름·아이콘 |
 | `CHANGELOG.md` | 변경 기록 (무엇을 왜 바꿨는지) |

@@ -5,26 +5,23 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>무대 화면 · 대부도 워크샵</title>
 <link rel="icon" type="image/png" href="icon-192.png">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=Unbounded:wght@500;600;700&display=swap">
 <style>
-  /* 앱과 같은 '벨벳 라운지' 톤: 짙은 자주빛 남색 + 샴페인 골드 */
+  /* 앱과 같은 게임 로비 톤 (Claude Design 토큰, assets/README.md) */
   :root {
-    --bg: #0D0A17;
-    --panel: #17122A;
-    --panel-2: #211A36;
-    --line: rgba(255, 255, 255, .07);
-    --line-2: rgba(255, 255, 255, .12);
-    --text: #F4F1FA;
-    --muted: #A49DB8;
-    --dim: #7D7690;
-    --gold: #E8C27A;
-    --gold-soft: rgba(232, 194, 122, .14);
-    --gold-line: rgba(232, 194, 122, .3);
-    --gold-ink: #1A1206;
-    --green: #8FE3B5;
-    --num: "Unbounded", "IBM Plex Sans KR", sans-serif;
+    --bg: #0E004F;
+    --panel: #1F0B55;
+    --panel-2: #401692;
+    --line: rgba(201, 184, 240, .16);
+    --line-2: rgba(201, 184, 240, .28);
+    --text: #FFFFFF;
+    --muted: #C9B8F0;
+    --dim: #A894D8;
+    --gold: #FFE652;
+    --gold-soft: rgba(255, 230, 82, .14);
+    --gold-line: rgba(255, 230, 82, .32);
+    --gold-ink: #3A1A00;
+    --green: #62D22F;
+    --num: system-ui, -apple-system, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
     --gold-metal: linear-gradient(180deg, #F5DCA4, #DDAE5C);
     --gold-text: linear-gradient(180deg, #FBE6B8, #D9A955);
     --lit: linear-gradient(180deg, rgba(255, 255, 255, .04), rgba(255, 255, 255, 0) 45%);
@@ -34,7 +31,7 @@
   html, body { margin: 0; height: 100%; }
   body {
     color: var(--text); overflow: hidden;
-    font-family: "IBM Plex Sans KR", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
+    font-family: var(--num);
     background:
       radial-gradient(80% 60% at 50% -15%, rgba(124, 74, 190, .32), transparent 65%),
       radial-gradient(50% 40% at 100% 0%, rgba(232, 194, 122, .10), transparent 60%),
@@ -143,17 +140,97 @@
   @keyframes pop { from { transform: scale(.4); opacity: 0; } }
   .coin {
     position: fixed; top: -6vh; width: 4.4vh; height: 4.4vh; border-radius: 50%; z-index: 11; pointer-events: none;
-    background: radial-gradient(circle at 35% 30%, #FFF4D6, #E8C27A 50%, #B88A3E);
+    background: var(--fx-coin-img, radial-gradient(circle at 35% 30%, #FFF4D6, #E8C27A 50%, #B88A3E)) center / contain no-repeat;
     box-shadow: inset 0 0 0 .25vh #A87B32;
     animation: fall linear forwards;
   }
   @keyframes fall { to { transform: translateY(115vh) rotate(var(--r)); } }
+  /* 발표 등급별: JACKPOT 은 광선이 빠르고 밝게, 글자가 크게 */
+  #announce.tier-epic .an-rays { background: repeating-conic-gradient(rgba(232, 194, 122, .12) 0 8deg, transparent 8deg 16deg); animation-duration: 14s; }
+  #announce.tier-legend { background: radial-gradient(circle at 50% 45%, rgba(70, 46, 110, .95), rgba(9, 7, 17, .97) 70%); }
+  #announce.tier-legend .an-rays { background: var(--fx-rays-img, repeating-conic-gradient(rgba(255, 226, 160, .2) 0 6deg, transparent 6deg 12deg)); animation-duration: 7s; }
+  #announce.tier-legend .an-congrats, #announce.tier-epic .an-congrats {
+    font-size: 6vh; letter-spacing: .12em; background: var(--gold-text); -webkit-background-clip: text; background-clip: text; color: transparent;
+    filter: drop-shadow(0 0 3vh rgba(232, 194, 122, .7));
+  }
+  #announce.tier-legend .an-congrats { font-size: 9vh; animation: pop .6s cubic-bezier(.2, 1.4, .4, 1), shimmer 1.4s ease-in-out .6s infinite; }
+  @keyframes shimmer { 50% { filter: drop-shadow(0 0 5vh rgba(255, 226, 160, 1)) brightness(1.25); } }
 
   .sound-btn {
     position: fixed; right: 2vw; bottom: 2.4vh; z-index: 20; cursor: pointer;
     background: rgba(23, 18, 42, .7); color: var(--muted); padding: 1vh 1.8vh; border-radius: 1.2vh; font: inherit; font-size: 1.7vh; font-weight: 600;
     border: 1px solid var(--line-2); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
   }
+
+  /* ===================================================================
+     게임 로비 테마 — Claude Design 리소스 (assets/). 2배 PNG, 9-slice 폭은 절반 (1080p 기준 px → vh)
+     =================================================================== */
+  body { background: #090037 url(assets/backgrounds/bg-stage.webp) center / cover no-repeat; }
+  body::before { display: none; }
+  .title b, .counter .num, .p-name, .p-left b, .an-who, .feed-item .fn { font-weight: 900; }
+  .title small { color: #FFDC07; font-weight: 900; }
+  .status { height: 4.4vh; padding: 0 2vh; border-radius: 0; background: none;
+    border-style: solid; border-width: 0; border-image: url(assets/badges/state-wait.png) 30 34 fill / 1.4vh 1.6vh stretch; }
+  .status.open { background: none; border-image-source: url(assets/badges/state-open.png); }
+  .status.open i { width: 1.4vh; height: 1.4vh; background: url(assets/badges/state-dot-open.png) center / contain no-repeat; animation: none; box-shadow: none; }
+  .counter .bar { height: 2vh; padding: .3vh .4vh; border-radius: 0; background: none; box-shadow: none; overflow: visible;
+    border-style: solid; border-width: 0; border-image: url(assets/bars/bar-track.png) 18 20 fill / .9vh 1vh stretch; }
+  .counter .bar i { height: 100%; border-radius: 0; background: none; box-shadow: none;
+    border-style: solid; border-width: 0; border-image: url(assets/bars/bar-fill-gold.png) 14 18 fill / .7vh .9vh stretch; }
+  .prize { background: none; box-shadow: none; border-radius: 0; padding: 2vh 2.4vh;
+    border-style: solid; border-width: 0; border-image: url(assets/stage/stage-prize-panel.png) 40 fill / 2vh stretch; }
+  .prize.first { background: none; box-shadow: none; border-image: url(assets/stage/stage-prize-panel-first.png) 48 fill / 2.4vh stretch; }
+  .p-emoji { position: relative; background: #fff; }
+  .p-emoji .photo { mix-blend-mode: normal; }
+  .prize.soldout .p-emoji::after { content: ''; width: 9vh; height: 4vh; padding: 0; border: 0; border-radius: 0; transform: none;
+    background: url(assets/badges/stamp-soldout.png) center / contain no-repeat; }
+  .p-grade { display: inline-flex; align-items: center; height: 3vh; padding: 0 1.1vh; border-radius: 0; background: none; color: var(--gold-ink); font-weight: 900;
+    border-style: solid; border-width: 0; border-image: url(assets/badges/grade-plate.png) 24 fill / 1.1vh stretch; }
+  .prize.first .p-grade { background: none; color: var(--gold-ink); }
+  .team { display: inline-flex; align-items: center; height: 1.8em; padding: 0 .7em; border-radius: 0; background: none; font-weight: 900;
+    border-style: solid; border-width: 0; border-image: url(assets/badges/team-chip-1.png) 30 34 fill / .8em .9em stretch; }
+  .team.team-2 { border-image-source: url(assets/badges/team-chip-2.png); }
+  .team.team-3 { border-image-source: url(assets/badges/team-chip-3.png); }
+  .team.team-4 { border-image-source: url(assets/badges/team-chip-4.png); }
+  .p-winners span { background: none; box-shadow: none; }
+  .feed { background: none; box-shadow: none; border-radius: 0; padding: 3vh;
+    border-style: solid; border-width: 0; border-image: url(assets/stage/stage-header-panel.png) 48 fill / 2.4vh stretch; }
+  .feed-item { background: none; box-shadow: none; border-radius: 0; padding: 1.3vh 1.8vh;
+    border-style: solid; border-width: 0; border-image: url(assets/stage/stage-feed-row.png) 28 fill / 1.4vh stretch; }
+  .feed-item.big { background: none; box-shadow: none; border-image: url(assets/stage/stage-feed-row-big.png) 34 fill / 1.7vh stretch; }
+  .feed-item .fe { background: #fff; }
+  /* 발표: 등급별 배경 + 광선 + 문구 로고 */
+  #announce { background: #090037 url(assets/stage/announce-bg-rare.webp) center / cover no-repeat; }
+  #announce.tier-epic { background-image: url(assets/stage/announce-bg-epic.webp); }
+  #announce.tier-legend { background: #090037 url(assets/stage/announce-bg-legend.webp) center / cover no-repeat; }
+  .an-rays, #announce.tier-epic .an-rays, #announce.tier-legend .an-rays { background: url(assets/fx/rays-blue.png) center / contain no-repeat; animation-duration: 24s; }
+  #announce.tier-epic .an-rays { background-image: url(assets/fx/rays-magenta.png); animation-duration: 14s; }
+  #announce.tier-legend .an-rays { background-image: url(assets/fx/rays-gold.png); animation-duration: 7s; }
+  .an-congrats, #announce.tier-legend .an-congrats, #announce.tier-epic .an-congrats { background: none; color: inherit; filter: none; letter-spacing: 0; line-height: 0; font-size: 0; }
+  .an-congrats img { display: block; width: 52vw; max-width: 1000px; height: auto; }
+  #announce.tier-epic .an-congrats img { width: 40vw; max-width: 760px; }
+  #announce.tier-legend .an-congrats img { width: 47vw; max-width: 900px; }
+  .an-emoji { position: relative; }
+  .an-emoji .photo { background: #fff; box-shadow: none; border-radius: 1.6vh; }
+  .an-emoji::after { content: ''; position: absolute; inset: -3vh; pointer-events: none;
+    border-style: solid; border-width: 0; border-image: url(assets/stage/stage-photo-frame.png) 90 / 4.2vh stretch; }
+  .an-grade { background: none; box-shadow: none; border-radius: 0; color: var(--gold-ink); font-weight: 900; padding: 1.2vh 3.4vh;
+    border-style: solid; border-width: 0; border-image: url(assets/badges/grade-plate.png) 24 fill / 2vh stretch; }
+  .an-who { background: linear-gradient(180deg, #FFF6B0, #FFC81E); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .coin { border-radius: 0; box-shadow: none; background-size: contain; background-repeat: no-repeat; background-position: center; }
+  .sound-btn { background: rgba(31, 11, 85, .8); }
+  /* 큰 패널은 CSS 로 그림 (작은 이미지의 가운데 질감을 크게 늘이면 뿌옇게 번짐) */
+  .prize { border: .2vh solid rgba(178, 160, 255, .55); border-image: none; border-radius: 1.8vh;
+    background: linear-gradient(180deg, #5040A0 0%, #3C2F82 55%, #33276F 100%);
+    box-shadow: inset 0 .2vh 0 rgba(255, 255, 255, .22), inset 0 -.4vh 0 rgba(0, 0, 0, .22), 0 .5vh 0 #1B0F52, 0 1.2vh 2.2vh rgba(0, 0, 0, .4); }
+  .prize.first { border-color: #FFD23F; border-image: none; background: linear-gradient(180deg, #5A4FB8 0%, #3E3592 60%, #33297A 100%);
+    box-shadow: inset 0 .2vh 0 rgba(255, 255, 255, .28), 0 .5vh 0 #8A5A00, 0 0 2.6vh rgba(255, 200, 40, .45), 0 1.2vh 2.2vh rgba(0, 0, 0, .4); }
+  .feed { border: .2vh solid rgba(120, 190, 255, .6); border-image: none; border-radius: 2vh;
+    background: linear-gradient(180deg, #3E4295 0%, #2F3175 100%);
+    box-shadow: inset 0 .2vh 0 rgba(255, 255, 255, .2), 0 .5vh 0 #121048, 0 0 2.4vh rgba(77, 179, 255, .25); }
+  /* 발표 동전은 사진·이름 뒤로 지나가게 */
+  #announce .coin { position: absolute; z-index: 1; }
+  #announce .an-body { z-index: 2; }
   @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; } }
   .sound-btn.on { color: var(--gold); border-color: var(--gold-line); }
   body.idle .sound-btn { opacity: 0; transition: opacity .5s; }
@@ -189,10 +266,10 @@
   'use strict';
   const cfg = window.TICKET_CONFIG;
   const sb = window.supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_ANON_KEY, { auth: { persistSession: false } });
-  const TEAM_COLORS = ['#F08A7E', '#7FB4F0', '#7FD6A8', '#B9A4F2', '#F2B48A', '#F0A6C8', '#8AD3E0', '#D6D07A'];
+  const TEAM_COLORS = ['#FF4A5C', '#4DB3FF', '#7FE85A', '#FFE14D', '#F2B48A', '#F0A6C8', '#8AD3E0', '#D6D07A'];
   const $ = (id) => document.getElementById(id);
   const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-  const team = (t) => (t ? `<span class="team" style="--c:${TEAM_COLORS[(t - 1) % 8]}">${t}팀</span>` : '');
+  const team = (t) => (t ? `<span class="team team-${t}" style="--c:${TEAM_COLORS[(t - 1) % 8]}">${t}팀</span>` : '');
 
   let prizes = [];
   let draws = [];          // 공개된(뜯은) 결과만
@@ -205,6 +282,17 @@
 
   // 꽝이 아니고 '무대 발표'가 켜진 상품만 크게 발표 (흔한 상품은 목록에만)
   const isBig = (d) => !d.is_blank && prizes.find((p) => p.id === d.prize_id)?.announce !== false;
+  // 연출 등급 (app.js 와 같은 기준): 맨 위 상품 = legend, 고급 = epic, 그 외 발표 상품 = rare
+  const tierOf = (d) => {
+    const p = prizes.find((x) => x.id === d.prize_id);
+    if (p && prizes.find((x) => !x.is_blank)?.id === p.id) return 'legend';
+    return p?.premium ? 'epic' : 'rare';
+  };
+  const FX = {
+    legend: { label: 'JACKPOT', coins: 140, ms: 7000, title: 'title-jackpot', coin: ['coin-w', 'coin-w-tilt', 'gem-red', 'spark'] },
+    epic:   { label: 'BIG WIN', coins: 90,  ms: 5500, title: 'title-big-win', coin: ['coin-w', 'gem-magenta', 'spark'] },
+    rare:   { label: 'CONGRATULATIONS', coins: 50, ms: 5000, title: 'title-congratulations', coin: ['coin-w', 'gem-blue'] },
+  };
 
   // ---------------- 데이터 ----------------
   async function load() {
@@ -223,7 +311,11 @@
       seen = new Set(draws.map((d) => d.id));
       // stage.html?demo → 최근 당첨을 다시 발표 (리허설용)
       if (new URLSearchParams(location.search).has('demo')) {
-        const last = draws.find(isBig)
+        // ?demo=legend|epic|rare 로 등급별 발표도 미리보기
+        const want = new URLSearchParams(location.search).get('demo');
+        const pick = want && prizes.find((p) => !p.is_blank && tierOf({ prize_id: p.id }) === want);
+        const last = (pick && { player_name: '홍길동', team: 1, prize_id: pick.id, grade: pick.grade, prize_name: pick.name, emoji: pick.emoji })
+          || draws.find(isBig)
           || { player_name: '홍길동', team: 1, prize_id: null, grade: 'A상', prize_name: '미리보기 상품', emoji: '🎁' };
         queue.push(last);
         setTimeout(nextAnnounce, 800);
@@ -294,34 +386,38 @@
     showing = true;
     const d = queue.shift();
     const el = document.createElement('div');
+    const tier = tierOf(d);
     el.id = 'announce';
+    el.className = `tier-${tier}`;
     el.innerHTML = `
       <div class="an-rays"></div>
       <div class="an-body">
-        <div class="an-congrats">CONGRATULATIONS</div>
+        <div class="an-congrats"><img src="assets/fx/${FX[tier].title}.png" alt="${FX[tier].label}"></div>
         <div class="an-emoji">${visual(d.prize_id, d.emoji)}</div>
         <div class="an-grade">${esc(d.grade)} 당첨</div>
         <div class="an-prize">${esc(d.prize_name)}</div>
         <div class="an-who">${team(d.team)}${esc(d.player_name)}</div>
       </div>`;
     document.body.appendChild(el);
-    beep('fanfare');
-    coinRain();
+    beep(tier === 'legend' ? 'jackpot' : 'fanfare');
+    coinRain(FX[tier].coins, FX[tier].coin);
     setTimeout(() => {
       el.classList.add('hide');
       setTimeout(() => { el.remove(); showing = false; nextAnnounce(); }, 500);
-    }, queue.length ? 3000 : 5000);   // 뒤에 대기 중이면 3초, 아니면 5초
+    }, queue.length ? 3000 : FX[tier].ms);   // 뒤에 대기 중이면 3초, 아니면 등급별 시간
   }
 
-  function coinRain() {
-    for (let i = 0; i < 50; i++) {
+  function coinRain(n = 50, pics = ['coin-w']) {
+    for (let i = 0; i < n; i++) {
       const c = document.createElement('div');
       c.className = 'coin';
+      c.style.backgroundImage = `url(assets/fx/particles/${pics[i % pics.length]}.png)`;
       c.style.left = `${Math.random() * 100}vw`;
-      c.style.setProperty('--r', `${Math.random() * 1080 - 540}deg`);
+      c.style.setProperty('--r', `${Math.random() * 60 - 30}deg`);   // 거의 똑바로 (W 가 읽히게)
       c.style.animationDuration = `${1.8 + Math.random() * 1.8}s`;
       c.style.animationDelay = `${Math.random() * 1.2}s`;
-      document.body.appendChild(c);
+      // 발표 화면 안(사진·이름 뒤)으로 떨어지게
+      (document.getElementById('announce') || document.body).appendChild(c);
       setTimeout(() => c.remove(), 5000);
     }
   }
@@ -344,6 +440,11 @@
       if (kind === 'fanfare') {
         [392, 523, 659, 784].forEach((f, i) => tone(f, i * 0.12, 0.2, 0.15));
         [1047, 1319, 1568].forEach((f) => tone(f, 0.5, 1.0, 0.1));
+      }
+      if (kind === 'jackpot') {
+        [523, 659, 784, 1047, 784, 1047, 1319, 1568].forEach((f, i) => tone(f, i * 0.09, 0.16, 0.14));
+        [1047, 1319, 1568, 2093].forEach((f) => tone(f, 0.8, 1.8, 0.09));
+        [131, 196].forEach((f) => tone(f, 0.8, 1.3, 0.12, 'sawtooth'));
       }
       if (kind === 'blip') tone(660, 0, 0.12, 0.06, 'sine');
     } catch {}

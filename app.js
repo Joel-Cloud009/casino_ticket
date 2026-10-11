@@ -6,19 +6,20 @@
   const $toast = document.getElementById('toast');
   const TOKEN_KEY = 'ticket_casino_token';
   const TEAMS = 4;
-  const TEAM_COLORS = ['#F08A7E', '#7FB4F0', '#7FD6A8', '#B9A4F2', '#F2B48A', '#F0A6C8', '#8AD3E0', '#D6D07A'];
+  const TEAM_COLORS = ['#FF4A5C', '#4DB3FF', '#7FE85A', '#FFE14D', '#F2B48A', '#F0A6C8', '#8AD3E0', '#D6D07A'];
   const GRADE_COLORS = ['#E8C27A', '#D9B3F0', '#9CC7F2', '#9FDDBF', '#F2B48A', '#F0A6C8'];
+  // 디자인 리소스 (assets/README.md · Claude Design). 2배 해상도 PNG, 글자는 HTML
+  const img = (path, w, alt = '') => `<img class="ic" src="assets/${path}" width="${w}" height="${w}" alt="${alt}">`;
+  // 결과 문구 로고: 'short' = JACKPOT! · BIG WIN! · NICE!  /  'game' = GRAND JACKPOT · MAJOR JACKPOT · AWESOME (게임 문구)
+  const TITLE_SET = 'short';
+  const TITLES = {
+    short: { legend: 'title-jackpot', epic: 'title-big-win', rare: 'title-nice' },
+    game: { legend: 'title-grand-jackpot', epic: 'title-major-jackpot', rare: 'title-awesome' },
+  };
   // 선 아이콘 (이모지 대신)
   const svg = (d, w = 22) => `<svg width="${w}" height="${w}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
   const ICON = {
     rooms: svg('<rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="8.5" cy="8.5" r="1.2"/><circle cx="15.5" cy="15.5" r="1.2"/><circle cx="12" cy="12" r="1.2"/>'),
-    home: svg('<path d="M3 11 12 4l9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/>'),
-    draw: svg('<path d="M3 7a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v3a2 2 0 0 0 0 4v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-3a2 2 0 0 0 0-4z"/>'),
-    prizes: svg('<rect x="3" y="8" width="18" height="13" rx="2"/><path d="M12 8v13M3 12h18M12 8S10 3 7.5 4.5 9 8 12 8zM12 8s2-5 4.5-3.5S15 8 12 8z"/>'),
-    logs: svg('<path d="M6 3h12v18l-3-2-3 2-3-2-3 2zM9 8h6M9 12h6"/>'),
-    admin: svg('<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>'),
-    check: svg('<path d="M20 6 9 17l-5-5"/>', 14),
-    chevron: svg('<path d="m9 6 6 6-6 6"/>', 18),
     lock: svg('<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>', 13),
     trash: svg('<path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/>', 16),
   };
@@ -85,7 +86,7 @@
     { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const $ = (sel) => $app.querySelector(sel);
   const teamColor = (t) => TEAM_COLORS[(t - 1) % TEAM_COLORS.length];
-  const teamBadge = (t) => (t ? `<span class="badge team" style="--c:${teamColor(t)}">${t}팀</span>` : '');
+  const teamBadge = (t) => (t ? `<span class="badge team team-${t}" style="--c:${teamColor(t)}">${t}팀</span>` : '');
 
   let toastTimer = null;
   function toast(msg, isError = false) {
@@ -124,7 +125,8 @@
   // 소리
   // ------------------------------------------------------------------
   let ac = null;
-  function beep(kind) {
+  // p = 뜯은 정도(0~1), k = 연출 세기(0~1): 좋은 상품일수록 뜯는 소리가 높아짐
+  function beep(kind, p = 0, k = 0) {
     try {
       ac = ac || new (window.AudioContext || window.webkitAudioContext)();
       if (ac.state === 'suspended') ac.resume();
@@ -137,8 +139,18 @@
         o.connect(g).connect(ac.destination);
         o.start(now + start); o.stop(now + start + len + 0.02);
       };
-      if (kind === 'rip') tone(180 + Math.random() * 120, 0, 0.04, 0.05, 'sawtooth');
+      if (kind === 'rip') tone(180 + Math.random() * 120 + p * k * 700, 0, 0.04, 0.05 + p * k * 0.03, 'sawtooth');
+      if (kind === 'pop') tone(880, 0, 0.14, 0.08, 'triangle');
       if (kind === 'win') [523, 659, 784, 1047, 1319].forEach((f, i) => tone(f, i * 0.09, i === 4 ? 0.7 : 0.18, 0.12, 'triangle'));
+      if (kind === 'fanfare') {
+        [392, 523, 659, 784].forEach((f, i) => tone(f, i * 0.11, 0.2, 0.14, 'triangle'));
+        [1047, 1319, 1568].forEach((f) => tone(f, 0.48, 1.1, 0.09, 'triangle'));
+      }
+      if (kind === 'jackpot') {
+        [523, 659, 784, 1047, 784, 1047, 1319, 1568].forEach((f, i) => tone(f, i * 0.08, 0.15, 0.12, 'triangle'));
+        [1047, 1319, 1568, 2093].forEach((f) => tone(f, 0.72, 1.8, 0.08, 'triangle'));
+        [131, 196].forEach((f) => tone(f, 0.72, 1.2, 0.12, 'sawtooth'));
+      }
       if (kind === 'lose') { tone(392, 0, 0.2, 0.1, 'triangle'); tone(330, 0.18, 0.4, 0.1, 'triangle'); }
     } catch {}
   }
@@ -278,7 +290,7 @@
         <input class="input" id="join-name" maxlength="20" placeholder="이름" autocomplete="off" required>
         <button class="btn gold block" type="submit">입장하기</button>
         <p class="small muted" style="margin-top:16px">처음 입장한 기기에 이름이 연결돼요.<br>다른 기기로 바꾸려면 관리자에게 기기 초기화를 요청하세요.</p>
-        <a class="small muted" href="stage.html" style="display:inline-block;margin-top:18px">📺 무대 화면으로 보기 (입장 없이)</a>
+        <a class="small muted" href="stage.html" style="display:inline-flex;align-items:center;gap:6px;margin-top:18px">${img('icons/icon-stage.png', 18)} 무대 화면으로 보기 (입장 없이)</a>
       </form></div>`;
     const $form = document.getElementById('join-form');
     const $name = document.getElementById('join-name');
@@ -330,7 +342,7 @@
             <div class="me-name" id="me-name"></div>
             <div class="me-sub" id="me-sub"></div>
           </div>
-          <div class="me-balance" id="me-bal"><div class="unit">보유</div><div class="num">-</div></div>
+          <div class="me-balance" id="me-bal"><img class="me-coin" src="assets/fx/particles/coin-w.png" alt=""><div><div class="unit">보유</div><div class="num">-</div></div></div>
         </div>
       </div>
       <nav class="tabbar" id="tabs"></nav>
@@ -393,7 +405,7 @@
               <div style="flex:1"><label for="pf-qty">수량</label><input class="input" id="pf-qty" type="number" inputmode="numeric" min="0" max="10000" value="1"></div>
               <div style="flex:1"><label for="pf-sort">표시 순서</label><input class="input" id="pf-sort" type="number" inputmode="numeric" value="1"></div>
             </div>
-            <label class="toggle" style="margin-top:4px"><input type="checkbox" id="pf-announce" checked> 📺 무대 화면에서 크게 발표</label>
+            <label class="toggle" style="margin-top:4px"><input type="checkbox" id="pf-announce" checked> ${img('icons/icon-stage.png', 18)} 무대 화면에서 크게 발표</label>
             <label class="toggle"><input type="checkbox" id="pf-premium"> 고급 상품 (한 사람이 고급 상품을 2개 이상 받지 않게)</label>
             <label class="toggle"><input type="checkbox" id="pf-blank"> 꽝 (상품 없음)</label>
             <div class="row" style="margin-top:6px">
@@ -418,12 +430,12 @@
       <section data-view="admin">
         <h2 class="page-title">관리</h2>
         <div class="card">
-          <h3>🎟️ 뽑기 설정</h3>
+          <h3>${img('icons/icon-draw.png', 22)} 뽑기 설정</h3>
           <div class="row" style="justify-content:space-between">
             <div id="draw-open-text"></div>
             <button class="btn" id="draw-open-btn" data-action="toggle-draw"></button>
           </div>
-          <a class="btn ghost block" href="stage.html" target="_blank" style="margin-top:10px;display:block;text-align:center;text-decoration:none">📺 무대 화면 열기</a>
+          <a class="btn ghost block" href="stage.html" target="_blank" style="margin-top:10px;text-decoration:none">${img('icons/icon-stage.png', 20)} 무대 화면 열기</a>
         </div>
 
         <div class="card">
@@ -432,7 +444,7 @@
         </div>
 
         <div class="card">
-          <h3>🏆 팀 순위 지급</h3>
+          <h3>${img('icons/icon-trophy.png', 22)} 팀 순위 지급</h3>
           <div class="form-grid">
             ${rankRows}
             <input class="input" id="rank-note" maxlength="80" placeholder="메모 (예: 레크리에이션 1)">
@@ -464,7 +476,7 @@
         </div>
 
         <div class="card">
-          <h3>👥 팀 일괄 배정</h3>
+          <h3>${img('icons/icon-team.png', 22)} 팀 일괄 배정</h3>
           <textarea class="input" id="team-import" rows="5" placeholder="[1팀] 홍길동, 김철수, 이영희&#10;[2팀] 박민수, 정승혁&#10;..."></textarea>
           <div class="small muted" style="margin:6px 0 10px">
             한 줄에 한 팀씩 "1팀: 이름, 이름" 형식. 아직 입장 안 한 이름은 미리 등록돼요.
@@ -518,6 +530,28 @@
     img.classList.toggle('hidden', !url);
     if (url) img.src = url;
   }
+  // 연출 등급: 상품 목록 맨 위 = legend, 고급 상품 = epic, 무대 발표 상품 = rare, 나머지(젤리 등) = common
+  // glow = 뜯을 때 새어 나오는 빛 세기, banner = 홈에서 다른 사람에게 크게 알림
+  const FX = {
+    legend: { label: 'JACKPOT!', glow: 1,   coins: 110, confetti: 110, flash: true,  sound: 'jackpot', banner: true,  vibrate: [120, 60, 120, 60, 420] },
+    epic:   { label: 'BIG WIN!', glow: .75, coins: 70,  confetti: 60,  flash: true,  sound: 'fanfare', banner: true,  vibrate: [100, 60, 260] },
+    rare:   { label: 'NICE!',    glow: .45, coins: 36,  confetti: 0,   flash: false, sound: 'win',     banner: false, vibrate: [80, 60, 160] },
+    common: { label: '',         glow: 0,   coins: 12,  confetti: 0,   flash: false, sound: 'pop',     banner: false, vibrate: [60] },
+  };
+  // 등급별 연출 리소스 (assets/README.md '뽑기 연출 · 등급별 사용표')
+  const PARTICLES = { legend: ['coin-w', 'coin-w-tilt', 'gem-red', 'spark'], epic: ['coin-w', 'gem-magenta', 'spark'], rare: ['coin-w', 'gem-blue'], common: ['coin-w'] };
+  const CONFETTI = { legend: ['gold', 'red', 'magenta', 'purple'], epic: ['magenta', 'gold', 'purple'] };
+  const CHARGE_MAX = { legend: 3, epic: 2, rare: 1, common: 0 };   // 긁는 중 번개 단계 (--p 0.15 / 0.45 / 0.75)
+  const titleImg = (tier, cls) => `<img class="${cls}" src="assets/fx/${TITLES[TITLE_SET][tier]}.png" alt="${FX[tier].label}">`;
+  const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+  const prizeTier = (prizeId) => {
+    const p = state.prizes.find((x) => x.id === prizeId);
+    if (!p || p.is_blank) return 'common';
+    if (state.prizes.find((x) => !x.is_blank)?.id === p.id) return 'legend';
+    if (p.premium) return 'epic';
+    if (p.announce !== false) return 'rare';
+    return 'common';
+  };
   const gradeColor = (prizeId) => {
     const idx = state.prizes.filter((p) => !p.is_blank).findIndex((p) => p.id === prizeId);
     return GRADE_COLORS[Math.max(0, idx) % GRADE_COLORS.length];
@@ -542,6 +576,7 @@
     $('#me-name').textContent = state.me.name;
     $('#me-avatar').textContent = [...state.me.name][0] || '?';
     $('#me-avatar').style.setProperty('--c', meRow?.team ? teamColor(meRow.team) : '#8C84A6');
+    $('#me-avatar').dataset.team = meRow?.team || '';
     $('#me-sub').innerHTML =
       `<span class="live-dot ${state.live ? 'on' : ''}" title="${state.live ? '실시간 연결됨' : '연결 중'}"></span>`
       + (meRow?.team ? `<span style="color:${teamColor(meRow.team)}">${meRow.team}팀</span>` : '팀 미정')
@@ -561,12 +596,12 @@
   }
 
   function renderTabs() {
-    // 게임방 탭은 숨김 (기능·DB 는 그대로). 다시 쓰려면 맨 앞에 ['rooms', ICON.rooms, '게임'] 추가
-    const tabs = [['board', ICON.home, '홈'], ['draw', ICON.draw, '뽑기'], ['prizes', ICON.prizes, '상품'], ['logs', ICON.logs, '기록']];
-    if (state.me.is_admin) tabs.push(['admin', ICON.admin, '관리']);
+    // 게임방 탭은 숨김 (기능·DB 는 그대로). 다시 쓰려면 맨 앞에 ['rooms', ..., '게임'] 추가 (탭 아이콘 이미지 필요)
+    const tabs = [['board', 'home', '홈'], ['draw', 'draw', '뽑기'], ['prizes', 'prizes', '상품'], ['logs', 'logs', '기록']];
+    if (state.me.is_admin) tabs.push(['admin', 'admin', '관리']);
     $('#tabs').innerHTML = tabs.map(([k, icon, label]) =>
       `<button class="tab ${state.tab === k ? 'active' : ''}" data-action="tab" data-tab="${k}">
-        <span class="tab-icon">${icon}</span><span class="tab-label">${label}</span></button>`).join('');
+        <span class="tab-icon">${img(`icons/tab-${icon}-${state.tab === k ? 'on' : 'off'}.png`, 24)}</span><span class="tab-label">${label}</span></button>`).join('');
     $app.querySelectorAll('section[data-view]').forEach((s) => {
       s.classList.toggle('hidden', s.dataset.view !== state.tab);
     });
@@ -686,7 +721,7 @@
       </div>
       <div class="hero-num"><b>${meRow?.balance ?? 0}</b><span>장</span></div>
       <div class="hero-actions">
-        <button class="btn gold" data-action="tab" data-tab="draw">${ICON.draw} 뽑기 하러 가기</button>
+        <button class="btn gold" data-action="tab" data-tab="draw">${img('icons/icon-draw.png', 22)} 뽑기 하러 가기</button>
         <button class="btn ghost" data-action="tab" data-tab="prizes">상품 보기</button>
       </div>`;
 
@@ -698,7 +733,7 @@
     }));
     const maxSum = Math.max(1, ...teamSums.map((t) => t.sum));
     $('#team-summary').innerHTML = teamSums.map((t) => `
-      <div class="team-bar" style="--c:${teamColor(t.team)}">
+      <div class="team-bar" data-team="${t.team}" style="--c:${teamColor(t.team)}">
         <span class="team-name">${t.team}팀</span>
         <span class="bar"><i style="width:${Math.round((t.sum / maxSum) * 100)}%"></i></span>
         <span class="team-sum">${t.sum}</span>
@@ -711,25 +746,35 @@
       const ok = s.issued === s.held + s.staked + drawn;
       const detail = `보유 ${s.held}${s.staked ? ` + 판돈 ${s.staked}` : ''} + 뽑기 ${drawn}`;
       $('#integrity').innerHTML = ok
-        ? `<div class="integrity ok">${ICON.check} 총 발행 ${s.issued}장 = ${detail} · 정합성 확인됨</div>`
+        ? `<div class="integrity ok">${img('icons/icon-check.png', 14)} 총 발행 ${s.issued}장 = ${detail} · 정합성 확인됨</div>`
         : `<div class="integrity bad">⚠ 수량 불일치 · 총 발행 ${s.issued}장 ≠ ${detail}</div>`;
     }
 
     const minor = won.length - major.length;
     $('#stats').textContent = won.length ? `주요 ${major.length}개${minor ? ` · 그 외 ${minor}개` : ''}` : '';
 
+    // 데이터를 처음 받기 전(빈 화면)에는 '이미 본 당첨'을 기록하지 않음 → 첫 화면에서 옛 당첨이 새것처럼 뜨지 않게
+    const loaded = !!state.stats;
+    if (!loaded) state.seenDraws = null;
+
+    // 다른 사람의 큰 당첨(epic 이상)은 어느 탭에 있든 위쪽 배너로
+    if (loaded && state.seenDraws) {
+      major.filter((d) => !state.seenDraws.has(d.id) && d.player_id !== state.me.id && FX[prizeTier(d.prize_id)].banner)
+        .reverse().forEach(queueWinBanner);
+    }
+
     $('#board').innerHTML = major.slice(0, 50).map((d) => {
       const flash = state.seenDraws && !state.seenDraws.has(d.id);
       const tc = d.team ? teamColor(d.team) : '#8C84A6';
       return `
-        <div class="lb-row ${d.player_id === state.me.id ? 'me' : ''} ${flash ? 'flash' : ''}">
+        <div class="lb-row tier-${prizeTier(d.prize_id)} ${d.player_id === state.me.id ? 'me' : ''} ${flash ? 'flash' : ''}">
           <span class="draw-emoji">${prizeVisual(d.prize_id, d.emoji)}</span>
           <span class="nm"><b>${esc(d.player_name)}${d.player_id === state.me.id ? ' <em>나</em>' : ''}</b>
             <small style="color:${tc}">${d.team ? `${d.team}팀` : '팀 미정'} · ${fmtTime(d.revealed_at || d.created_at)}</small></span>
           <span class="feed-prize"><b>${esc(d.grade)}</b>${esc(d.prize_name)}</span>
         </div>`;
     }).join('') || '<div class="empty">아직 당첨이 없어요.</div>';
-    state.seenDraws = new Set(won.map((d) => d.id));
+    if (loaded) state.seenDraws = new Set(won.map((d) => d.id));
 
     $('#claim-link').classList.toggle('hidden', state.me.is_admin);
   }
@@ -787,7 +832,7 @@
       ? '<div class="empty">아직 뽑은 복권이 없어요.</div>'
       : mine.map((d) => `
         <div class="draw-row ${d.is_blank ? 'blank' : 'win'}">
-          <div class="draw-emoji">${d.is_blank ? '😢' : prizeVisual(d.prize_id, d.emoji)}</div>
+          <div class="draw-emoji">${d.is_blank ? '' : prizeVisual(d.prize_id, d.emoji)}</div>
           <div style="flex:1">
             <div><b>${esc(d.grade)}</b> ${d.is_blank ? '' : esc(d.prize_name)}</div>
             <div class="small muted">${fmtTime(d.revealed_at || d.created_at)}</div>
@@ -801,7 +846,7 @@
     if (!btn) return;
     const reason = drawBlockReason();
     btn.disabled = !!reason;
-    btn.innerHTML = reason ? esc(reason) : `${ICON.draw} ${drawUI.mode === 'revealed' ? '한 장 더 뽑기' : '뽑기권 1장 사용하기'}`;
+    btn.innerHTML = reason ? esc(reason) : `${img('icons/icon-draw.png', 22)} ${drawUI.mode === 'revealed' ? '한 장 더 뽑기' : '뽑기권 1장 사용하기'}`;
   }
 
   // 카드 영역: 뽑기 흐름이 바뀔 때만 다시 그림
@@ -813,9 +858,12 @@
     const no = d ? String(d.id).padStart(6, '0') : '------';
     const revealed = drawUI.mode === 'revealed';
     const peelable = drawUI.mode === 'ready';
+    const tier = d && !d.is_blank ? prizeTier(d.prize_id) : '';
 
     $st.innerHTML = `
-      <div class="pt-card ${revealed ? (d.is_blank ? 'lose' : 'win') : ''}" id="pt-card">
+      <div class="pt-card ${revealed ? (d.is_blank ? 'lose' : 'win') : ''} ${tier ? `fx-${tier}` : ''}" id="pt-card">
+        <div class="pt-aura" aria-hidden="true"></div>
+        <div class="pt-charge" aria-hidden="true"></div>
         <div class="pt-inner">
           <div class="pt-top">
             <span>LUCKY TICKET</span>
@@ -824,14 +872,15 @@
           <div class="pt-window" id="pt-window">
             <div class="pt-prize">
               <div class="pt-grade">${d ? esc(d.is_blank ? '꽝' : d.grade) : '?'}</div>
-              <div class="pt-emoji">${d ? (d.is_blank ? '😢' : prizeVisual(d.prize_id, d.emoji)) : ''}</div>
+              <div class="pt-emoji">${d && !d.is_blank ? prizeVisual(d.prize_id, d.emoji) : ''}</div>
               <div class="pt-pname">${d && !d.is_blank ? esc(d.prize_name) : ''}</div>
             </div>
             <div class="pt-cover ${peelable ? 'peelable' : ''}" id="pt-cover" style="width:${revealed ? 0 : 100}%">
               <div class="pt-cover-bg" id="pt-cover-bg"></div>
-              <div class="pt-tab">${ICON.chevron}</div>
+              <div class="pt-tab">${img('icons/icon-arrow.png', 24)}</div>
               <div class="pt-open"><b>${peelable ? 'OPEN →' : 'LUCKY'}</b><span>${peelable ? '오른쪽으로 밀어서 뜯기' : '뽑기권 1장으로 한 장'}</span></div>
             </div>
+            <div class="pt-tear" id="pt-tear" aria-hidden="true"></div>
           </div>
         </div>
         <div class="pt-coins" id="pt-coins"></div>
@@ -844,9 +893,11 @@
   }
 
   function resultHtml(d) {
-    return d.is_blank
-      ? `<div class="res lose"><div class="res-big">꽝!</div><div>다음 기회에 😢</div></div>`
-      : `<div class="res win"><div class="res-big">${esc(d.grade)} 당첨</div><div class="res-prize">${esc(d.prize_name)}</div></div>`;
+    if (d.is_blank) return `<div class="res lose"><div class="res-big">꽝!</div><div>다음 기회에</div></div>`;
+    const tier = prizeTier(d.prize_id);
+    return `<div class="res win res-${tier}">
+      ${FX[tier].label ? titleImg(tier, 'fx-title') : ''}
+      <div class="res-big">${esc(d.grade)} 당첨</div><div class="res-prize">${esc(d.prize_name)}</div></div>`;
   }
 
   // 왼쪽 → 오른쪽으로 뜯기 (덮개는 오른쪽에 붙어 있고 왼쪽부터 줄어듦)
@@ -858,11 +909,24 @@
     let startP = 0;
     let moved = 0;
     let lastRip = 0;
+    const card = $('#pt-card');
+    const tier = drawUI.draw && !drawUI.draw.is_blank ? prizeTier(drawUI.draw.prize_id) : 'common';
+    const k = FX[tier].glow;
+    const tear = $('#pt-tear');
 
+    // 뜯은 정도를 --p 로 넘김 → 좋은 상품일수록 뜯는 선에서 빛이 새어 나오고 점점 세짐 (style.css '뽑기 연출')
     const setP = (p) => {
       drawUI.progress = p;
       cover.style.width = `${(1 - p) * 100}%`;
-      if (Math.abs(p - lastRip) > 0.06) { lastRip = p; beep('rip'); }
+      card.style.setProperty('--p', p.toFixed(3));
+      card.classList.toggle('charging', p > 0.01);
+      card.dataset.charge = Math.min(CHARGE_MAX[tier], p >= 0.75 ? 3 : p >= 0.45 ? 2 : p >= 0.15 ? 1 : 0);
+      if (tear) tear.style.left = `calc(${(p * 100).toFixed(2)}% - 40px)`;
+      if (Math.abs(p - lastRip) > 0.06) {
+        lastRip = p;
+        beep('rip', p, k);
+        if (k >= 0.75 && navigator.vibrate) navigator.vibrate(8 + Math.round(p * 20));
+      }
     };
 
     cover.addEventListener('pointerdown', (e) => {
@@ -906,15 +970,24 @@
     const d = drawUI.draw;
     drawUI.mode = 'revealed';
     const card = $('#pt-card');
+    card.classList.remove('charging');
     card.classList.add(d.is_blank ? 'lose' : 'win');
     $('#pt-cover').remove();
+    $('#pt-tear')?.remove();
+    delete card.dataset.charge;
     $('#pt-result').innerHTML = resultHtml(d);
+    // 결과 문구가 폰 화면 아래에 걸리지 않게 보이는 곳으로
+    $('#pt-result').scrollIntoView({ behavior: 'smooth', block: 'center' });
     if (d.is_blank) {
       beep('lose');
     } else {
-      beep('win');
-      burstCoins();
-      if (navigator.vibrate) navigator.vibrate([80, 60, 160]);
+      const tier = prizeTier(d.prize_id);
+      const fx = FX[tier];
+      beep(fx.sound);
+      burstCoins(fx.coins, tier);
+      if (fx.flash) flashScreen(tier);
+      if (fx.confetti) confetti(fx.confetti, tier);
+      if (navigator.vibrate) navigator.vibrate(fx.vibrate);
     }
     const btn = document.createElement('button');
     btn.className = 'btn gold block draw-btn';
@@ -927,14 +1000,18 @@
     refresh();
   }
 
-  function burstCoins() {
+  function burstCoins(n = 36, tier = 'common') {
     const box = $('#pt-coins');
     if (!box) return;
-    for (let i = 0; i < 36; i++) {
+    for (let i = 0; i < n; i++) {
       const c = document.createElement('div');
       c.className = 'coin';
+      const size = 24 + Math.round(Math.random() * 12);
+      c.style.width = c.style.height = `${size}px`;
+      c.style.left = c.style.top = `${-size / 2}px`;
+      c.style.backgroundImage = `url(assets/fx/particles/${pick(PARTICLES[tier])}.png)`;
       const ang = Math.random() * Math.PI * 2;
-      const dist = 90 + Math.random() * 170;
+      const dist = 90 + Math.random() * (110 + n * 1.6);
       c.style.setProperty('--dx', `${Math.cos(ang) * dist}px`);
       c.style.setProperty('--dy', `${Math.sin(ang) * dist - 60}px`);
       c.style.setProperty('--r', `${Math.random() * 720 - 360}deg`);
@@ -942,6 +1019,82 @@
       box.appendChild(c);
       setTimeout(() => c.remove(), 1800);
     }
+  }
+
+  // 화면 전체에 덮는 연출 층 (꽃가루, 번쩍임, 당첨 배너)
+  function fxLayer() {
+    let el = document.getElementById('fx-layer');
+    if (!el) {
+      el = document.createElement('div');
+      el.id = 'fx-layer';
+      el.className = 'fx-layer';
+      el.setAttribute('aria-hidden', 'true');
+      document.body.appendChild(el);
+    }
+    return el;
+  }
+
+  function confetti(n, tier = 'epic') {
+    const layer = fxLayer();
+    const colors = ['#E8C27A', '#FBE6B8', '#FFFFFF', ...TEAM_COLORS.slice(0, TEAMS)];
+    const pics = CONFETTI[tier];
+    for (let i = 0; i < n; i++) {
+      const c = document.createElement('i');
+      c.className = 'confetti';
+      c.style.left = `${Math.random() * 100}%`;
+      c.style.setProperty('--c', colors[i % colors.length]);
+      if (pics) {
+        const name = pick(pics);
+        const wide = name === 'gold' || name === 'magenta' || name === 'green';   // 리본(28×16) / 별·원(16×16)
+        c.style.background = `url(assets/fx/confetti/confetti-${name}.png) center / contain no-repeat`;
+        c.style.width = `${wide ? 20 : 12}px`;
+        c.style.height = `${wide ? 11 : 12}px`;
+      }
+      c.style.setProperty('--dx', `${Math.random() * 120 - 60}px`);
+      c.style.setProperty('--r', `${Math.random() * 1080 - 540}deg`);
+      c.style.animationDuration = `${2.2 + Math.random() * 1.6}s`;
+      c.style.animationDelay = `${Math.random() * 0.5}s`;
+      layer.appendChild(c);
+      setTimeout(() => c.remove(), 4600);
+    }
+  }
+
+  function flashScreen(tier) {
+    const f = document.createElement('div');
+    f.className = `fx-flash fx-flash-${tier}`;
+    fxLayer().appendChild(f);
+    setTimeout(() => f.remove(), 1200);
+  }
+
+  // 홈 등에서 다른 사람의 큰 당첨을 위쪽 배너로 알림 (한 번에 하나씩, 내가 뜯는 중엔 잠시 미룸)
+  const bannerQueue = [];
+  let bannerBusy = false;
+  function queueWinBanner(d) {
+    bannerQueue.push(d);
+    showNextBanner();
+  }
+  function showNextBanner() {
+    if (bannerBusy || !bannerQueue.length) return;
+    if (drawUI.mode === 'ready' || drawUI.mode === 'peeling') { setTimeout(showNextBanner, 1500); return; }
+    bannerBusy = true;
+    const d = bannerQueue.shift();
+    const tier = prizeTier(d.prize_id);
+    const el = document.createElement('div');
+    el.className = `win-banner tier-${tier}`;
+    el.innerHTML = `
+      <div class="wb-label">${titleImg(tier, 'wb-title')}</div>
+      <div class="wb-body">
+        <span class="draw-emoji">${prizeVisual(d.prize_id, d.emoji)}</span>
+        <span class="wb-who"><b>${esc(d.player_name)}</b><small style="color:${d.team ? teamColor(d.team) : 'var(--muted)'}">${d.team ? `${d.team}팀` : ''}</small></span>
+        <span class="wb-prize"><b>${esc(d.grade)}</b>${esc(d.prize_name)}</span>
+      </div>`;
+    fxLayer().appendChild(el);
+    confetti(tier === 'legend' ? 60 : 24, tier);
+    beep(tier === 'legend' ? 'fanfare' : 'win');
+    setTimeout(() => {
+      el.classList.add('out');
+      setTimeout(() => { el.remove(); bannerBusy = false; showNextBanner(); }, 450);
+    }, tier === 'legend' ? 5200 : 4000);
   }
 
   async function doDraw() {
@@ -1039,20 +1192,20 @@
     const room = l.room_id ? `[${esc(roomOf(l.room_id)?.title ?? '방')}]` : '[삭제된 방]';
     const note = l.note ? ` <span class="muted">(${esc(l.note)})</span>` : '';
     switch (l.kind) {
-      case 'join':   return `👋 ${p} 입장${note}`;
-      case 'grant':  return `🎁 ${a} → <b>${p}</b> 지급${note}`;
-      case 'revoke': return `↩️ ${a} → <b>${p}</b> 회수${note}`;
-      case 'bet':    return `🎟️ <b>${p}</b> ${room} 1장 걸기`;
-      case 'unbet':  return `✖️ <b>${p}</b> ${room} 걸기 취소`;
-      case 'payout': return `🏆 <b>${p}</b> ${room} 승리!`;
-      case 'refund': return `💸 <b>${p}</b> ${room} 환불`;
-      case 'room':   return `🎲 ${a} ${l.room_id ? room : ''} ${esc(l.note ?? '')}`;
-      case 'admin':  return `🔑 ${!p || a === p ? a : `${a} → ${p}`} ${esc(l.note ?? '')}`;
-      case 'reset':  return `📱 ${a} → ${p} ${esc(l.note ?? '')}`;
-      case 'delete': return `🗑️ ${a} ${esc(l.note ?? '')}`;
-      case 'team':   return `👥 ${a} → ${p} ${esc(l.note ?? '')}`;
-      case 'prize':  return `🎁 ${a} ${esc(l.note ?? '')}`;
-      case 'draw':   return `🎟️ <b>${p}</b> 복권 뽑기`;
+      case 'join':   return `${img('icons/icon-join.png', 18)} ${p} 입장${note}`;
+      case 'grant':  return `${img('icons/icon-give.png', 18)} ${a} → <b>${p}</b> 지급${note}`;
+      case 'revoke': return `${a} → <b>${p}</b> 회수${note}`;
+      case 'bet':    return `<b>${p}</b> ${room} 1장 걸기`;
+      case 'unbet':  return `<b>${p}</b> ${room} 걸기 취소`;
+      case 'payout': return `${img('icons/icon-trophy.png', 18)} <b>${p}</b> ${room} 승리!`;
+      case 'refund': return `<b>${p}</b> ${room} 환불`;
+      case 'room':   return `${a} ${l.room_id ? room : ''} ${esc(l.note ?? '')}`;
+      case 'admin':  return `${!p || a === p ? a : `${a} → ${p}`} ${esc(l.note ?? '')}`;
+      case 'reset':  return `${a} → ${p} ${esc(l.note ?? '')}`;
+      case 'delete': return `${a} ${esc(l.note ?? '')}`;
+      case 'team':   return `${img('icons/icon-team.png', 18)} ${a} → ${p} ${esc(l.note ?? '')}`;
+      case 'prize':  return `${img('icons/icon-give.png', 18)} ${a} ${esc(l.note ?? '')}`;
+      case 'draw':   return `${img('icons/icon-draw.png', 18)} <b>${p}</b> 복권 뽑기`;
       default:       return `${esc(l.kind)} ${p}${note}`;
     }
   }
@@ -1084,8 +1237,8 @@
     // 뽑기 설정
     const open = drawOpen();
     $('#draw-open-text').innerHTML = open
-      ? '<b style="color:var(--green)">🟢 뽑기 열림</b><div class="small muted">참가자들이 지금 뽑을 수 있어요</div>'
-      : '<b>⏸ 뽑기 닫힘</b><div class="small muted">관리자 포함 아무도 뽑을 수 없어요</div>';
+      ? '<b style="color:var(--green)"><i class="state-dot"></i> 뽑기 열림</b><div class="small muted">참가자들이 지금 뽑을 수 있어요</div>'
+      : '<b>뽑기 닫힘</b><div class="small muted">관리자 포함 아무도 뽑을 수 없어요</div>';
     const $ob = $('#draw-open-btn');
     $ob.textContent = open ? '닫기' : '열기';
     $ob.className = `btn ${open ? 'red' : 'green'}`;

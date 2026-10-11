@@ -11,6 +11,7 @@ SC사업본부 2026 대부도 워크샵(10.15–16)용 뽑기 웹앱. 팀 게임
 | `config.js` | Supabase URL + anon(publishable) 키. 공개돼도 되는 값. service_role 키는 절대 넣지 말 것 |
 | `schema.sql` | DB 테이블·RLS·함수 전부. 여러 번 실행해도 안전(멱등). **데이터(상품 목록 등)는 넣지 말 것** |
 | `prizes/` | 상품 사진 (DB `ticket_prizes.image_url` 에 `prizes/xxx.jpg` 로 연결) |
+| `assets/` | 디자인 리소스 (Claude Design 제작, 2배 PNG). 목록·9-slice 값·들어갈 클래스는 `assets/README.md` |
 | `print/` | 참가자용 QR·포스터 (사이트 주소 `workshopticket.netlify.app`) |
 | `_mock*.html` | 가짜 데이터로 화면만 확인하는 테스트 페이지. `.gitignore` 됨 |
 
@@ -41,6 +42,11 @@ SC사업본부 2026 대부도 워크샵(10.15–16)용 뽑기 웹앱. 팀 게임
 - 화면만 볼 때는 `_mock.html` 처럼 `window.supabase` 를 가짜로 바꾼 테스트 페이지를 만들어 쓴다 (커밋 안 됨).
 - `node --check app.js` 로 문법 확인.
 
-## 디자인 톤 "벨벳 라운지"
+## 디자인 톤: 게임 로비 (2026-10-11~)
 
-짙은 자주빛 남색 바탕(`#0D0A17`) + 샴페인 골드(`#E8C27A`) 하나만 포인트. 서체는 IBM Plex Sans KR(본문) + Unbounded(숫자·영문). 이모지 대신 선 아이콘(`ICON` in app.js). 팀 색: 코랄·하늘·민트·라일락. 티켓 안 글자는 가로 한 줄(줄바꿈 금지).
+회사 게임 로비 톤 + 최근 콘텐츠 "Dragon Thunder Link" 컨셉. 리소스는 `assets/` (Claude Design), 적용 규칙은 `assets/README.md`.
+- 바탕 `#0E004F`, 강조 금색 `#FFE652`, 주 버튼 초록 알약. 서체는 시스템 서체(굵게 800~900), 웹 서체 안 씀
+- 부품은 9-slice PNG(`border-image`). `style.css` 맨 끝 "게임 로비 테마" 구역이 위쪽 기본 규칙을 덮어씀 (border-width 0 + 이미지 폭 지정 → 레이아웃은 그대로)
+- 뽑기 연출 등급: 상품 목록 맨 위 = legend, 고급 상품 = epic, 무대 발표 상품 = rare, 나머지(젤리) = common. `app.js` 의 `FX`·`PARTICLES`·`CHARGE_MAX`, 결과 문구는 `TITLE_SET` ('short' / 'game')
+- 이모지 대신 `assets/icons/` 이미지. 팀 색 4개는 명도까지 다르게 (`TEAM_COLORS`). 티켓 안 글자는 가로 한 줄(줄바꿈 금지)
+- 등급 글자(A상 등)는 데이터에서 넣음. 이미지나 CSS `content` 로 박지 말 것
