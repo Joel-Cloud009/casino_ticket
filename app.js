@@ -1310,21 +1310,41 @@
   }
 
   // "[1팀] 홍길동, 김철수" / "1팀: 홍길동 김철수" / "1팀" 다음 줄부터 이름 나열 등
+  // 팀 줄 오타("2틴: ...")가 앞 팀에 섞여 들어가지 않도록, 이상한 줄은 errors 로 돌려준다
   function parseTeams(text) {
     const rows = [];
+    const errors = [];
+    const seen = new Map();
     let cur = null;
-    for (const raw of text.split('\n')) {
+    text.split('\n').forEach((raw, i) => {
       const line = raw.trim();
-      if (!line) continue;
+      if (!line) return;
+      const at = `${i + 1}번째 줄 "${line.length > 24 ? `${line.slice(0, 24)}…` : line}"`;
       const m = line.match(/^\[?\s*(\d+)\s*팀\s*\]?\s*[:：\-]?\s*(.*)$/);
       let rest = line;
-      if (m) { cur = Number(m[1]); rest = m[2]; }
-      if (!cur || cur < 1 || cur > TEAMS) continue;
+      if (m) {
+        cur = Number(m[1]);
+        rest = m[2];
+        if (cur < 1 || cur > TEAMS) { errors.push(`${at}: ${cur}팀은 없어요 (1~${TEAMS}팀)`); cur = null; return; }
+      } else if (/[:：[\]]/.test(line) || /^\d/.test(line) || /^\S*(팀|조|team)$/i.test(line.split(/[\s,，]/)[0])) {
+        errors.push(`${at}: 팀 이름을 못 알아봤어요. "2팀: 이름, 이름" 형식인지 확인해 주세요`);
+        cur = null;
+        return;
+      } else if (!cur) {
+        errors.push(`${at}: 어느 팀인지 없어요. 줄 앞에 "1팀:" 을 붙여 주세요`);
+        return;
+      }
       const names = (rest.includes(',') || rest.includes('，') ? rest.split(/[,，]/) : rest.split(/\s+/))
-        .map((s) => s.trim()).filter(Boolean);
-      for (const name of names) rows.push({ name, team: cur });
-    }
-    return rows;
+        .map((s) => s.trim().replace(/\s+/g, ' ')).filter(Boolean);
+      for (const name of names) {
+        if (name.length > 20) { errors.push(`${at}: "${name}" 은(는) 20자가 넘어요`); continue; }
+        const key = name.toLowerCase();
+        if (seen.has(key)) { errors.push(`"${name}" 이(가) ${seen.get(key)}팀과 ${cur}팀에 두 번 들어 있어요`); continue; }
+        seen.set(key, cur);
+        rows.push({ name, team: cur });
+      }
+    });
+    return { rows, errors };
   }
 
   // ------------------------------------------------------------------
@@ -1511,7 +1531,11 @@
         break;
       }
       case 'import-teams': {
-        const rows = parseTeams($('#team-import').value);
+        const { rows, errors } = parseTeams($('#team-import').value);
+        if (errors.length) {
+          alert(`입력에 확인할 곳이 있어서 팀 배정을 하지 않았어요.\n\n${errors.map((e) => `• ${e}`).join('\n')}`);
+          return;
+        }
         if (!rows.length) { toast('"1팀: 이름, 이름" 형식으로 입력해 주세요.', true); return; }
         const known = new Set(state.players.map((p) => p.name.toLowerCase()));
         const fresh = rows.filter((r) => !known.has(r.name.toLowerCase()));
