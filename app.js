@@ -6,10 +6,8 @@
   const $toast = document.getElementById('toast');
   const TOKEN_KEY = 'ticket_casino_token';
   const TEAMS = 4;
-  const TEAM_COLORS = ['#FF4A5C', '#4DB3FF', '#7FE85A', '#FFE14D', '#F2B48A', '#F0A6C8', '#8AD3E0', '#D6D07A'];
+  const TEAM_COLORS = ['#F08A7E', '#7FB4F0', '#7FD6A8', '#B9A4F2', '#F2B48A', '#F0A6C8', '#8AD3E0', '#D6D07A'];
   const GRADE_COLORS = ['#E8C27A', '#D9B3F0', '#9CC7F2', '#9FDDBF', '#F2B48A', '#F0A6C8'];
-  // 디자인 리소스 (assets/README.md · Claude Design). 2배 해상도 PNG, 글자는 HTML
-  const img = (path, w, alt = '') => `<img class="ic" src="assets/${path}" width="${w}" height="${w}" alt="${alt}">`;
   // 결과 문구 로고: 'short' = JACKPOT! · BIG WIN! · NICE!  /  'game' = GRAND JACKPOT · MAJOR JACKPOT · AWESOME (게임 문구)
   const TITLE_SET = 'short';
   const TITLES = {
@@ -20,6 +18,13 @@
   const svg = (d, w = 22) => `<svg width="${w}" height="${w}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
   const ICON = {
     rooms: svg('<rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="8.5" cy="8.5" r="1.2"/><circle cx="15.5" cy="15.5" r="1.2"/><circle cx="12" cy="12" r="1.2"/>'),
+    home: svg('<path d="M3 11 12 4l9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/>'),
+    draw: svg('<path d="M3 7a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v3a2 2 0 0 0 0 4v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-3a2 2 0 0 0 0-4z"/>'),
+    prizes: svg('<rect x="3" y="8" width="18" height="13" rx="2"/><path d="M12 8v13M3 12h18M12 8S10 3 7.5 4.5 9 8 12 8zM12 8s2-5 4.5-3.5S15 8 12 8z"/>'),
+    logs: svg('<path d="M6 3h12v18l-3-2-3 2-3-2-3 2zM9 8h6M9 12h6"/>'),
+    admin: svg('<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>'),
+    check: svg('<path d="M20 6 9 17l-5-5"/>', 14),
+    chevron: svg('<path d="m9 6 6 6-6 6"/>', 18),
     lock: svg('<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>', 13),
     trash: svg('<path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/>', 16),
   };
@@ -86,7 +91,7 @@
     { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const $ = (sel) => $app.querySelector(sel);
   const teamColor = (t) => TEAM_COLORS[(t - 1) % TEAM_COLORS.length];
-  const teamBadge = (t) => (t ? `<span class="badge team team-${t}" style="--c:${teamColor(t)}">${t}팀</span>` : '');
+  const teamBadge = (t) => (t ? `<span class="badge team" style="--c:${teamColor(t)}">${t}팀</span>` : '');
 
   let toastTimer = null;
   function toast(msg, isError = false) {
@@ -290,7 +295,7 @@
         <input class="input" id="join-name" maxlength="20" placeholder="이름" autocomplete="off" required>
         <button class="btn gold block" type="submit">입장하기</button>
         <p class="small muted" style="margin-top:16px">처음 입장한 기기에 이름이 연결돼요.<br>다른 기기로 바꾸려면 관리자에게 기기 초기화를 요청하세요.</p>
-        <a class="small muted" href="stage.html" style="display:inline-flex;align-items:center;gap:6px;margin-top:18px">${img('icons/icon-stage.png', 18)} 무대 화면으로 보기 (입장 없이)</a>
+        <a class="small muted" href="stage.html" style="display:inline-block;margin-top:18px">📺 무대 화면으로 보기 (입장 없이)</a>
       </form></div>`;
     const $form = document.getElementById('join-form');
     const $name = document.getElementById('join-name');
@@ -342,7 +347,7 @@
             <div class="me-name" id="me-name"></div>
             <div class="me-sub" id="me-sub"></div>
           </div>
-          <div class="me-balance" id="me-bal"><img class="me-coin" src="assets/fx/particles/coin-w.png" alt=""><div><div class="unit">보유</div><div class="num">-</div></div></div>
+          <div class="me-balance" id="me-bal"><div class="unit">보유</div><div class="num">-</div></div>
         </div>
       </div>
       <nav class="tabbar" id="tabs"></nav>
@@ -405,7 +410,7 @@
               <div style="flex:1"><label for="pf-qty">수량</label><input class="input" id="pf-qty" type="number" inputmode="numeric" min="0" max="10000" value="1"></div>
               <div style="flex:1"><label for="pf-sort">표시 순서</label><input class="input" id="pf-sort" type="number" inputmode="numeric" value="1"></div>
             </div>
-            <label class="toggle" style="margin-top:4px"><input type="checkbox" id="pf-announce" checked> ${img('icons/icon-stage.png', 18)} 무대 화면에서 크게 발표</label>
+            <label class="toggle" style="margin-top:4px"><input type="checkbox" id="pf-announce" checked> 📺 무대 화면에서 크게 발표</label>
             <label class="toggle"><input type="checkbox" id="pf-premium"> 고급 상품 (한 사람이 고급 상품을 2개 이상 받지 않게)</label>
             <label class="toggle"><input type="checkbox" id="pf-blank"> 꽝 (상품 없음)</label>
             <div class="row" style="margin-top:6px">
@@ -430,12 +435,12 @@
       <section data-view="admin">
         <h2 class="page-title">관리</h2>
         <div class="card">
-          <h3>${img('icons/icon-draw.png', 22)} 뽑기 설정</h3>
+          <h3>🎟️ 뽑기 설정</h3>
           <div class="row" style="justify-content:space-between">
             <div id="draw-open-text"></div>
             <button class="btn" id="draw-open-btn" data-action="toggle-draw"></button>
           </div>
-          <a class="btn ghost block" href="stage.html" target="_blank" style="margin-top:10px;text-decoration:none">${img('icons/icon-stage.png', 20)} 무대 화면 열기</a>
+          <a class="btn ghost block" href="stage.html" target="_blank" style="margin-top:10px;display:block;text-align:center;text-decoration:none">📺 무대 화면 열기</a>
         </div>
 
         <div class="card">
@@ -444,7 +449,7 @@
         </div>
 
         <div class="card">
-          <h3>${img('icons/icon-trophy.png', 22)} 팀 순위 지급</h3>
+          <h3>🏆 팀 순위 지급</h3>
           <div class="form-grid">
             ${rankRows}
             <input class="input" id="rank-note" maxlength="80" placeholder="메모 (예: 레크리에이션 1)">
@@ -476,7 +481,7 @@
         </div>
 
         <div class="card">
-          <h3>${img('icons/icon-team.png', 22)} 팀 일괄 배정</h3>
+          <h3>👥 팀 일괄 배정</h3>
           <textarea class="input" id="team-import" rows="5" placeholder="[1팀] 홍길동, 김철수, 이영희&#10;[2팀] 박민수, 정승혁&#10;..."></textarea>
           <div class="small muted" style="margin:6px 0 10px">
             한 줄에 한 팀씩 "1팀: 이름, 이름" 형식. 아직 입장 안 한 이름은 미리 등록돼요.
@@ -576,7 +581,6 @@
     $('#me-name').textContent = state.me.name;
     $('#me-avatar').textContent = [...state.me.name][0] || '?';
     $('#me-avatar').style.setProperty('--c', meRow?.team ? teamColor(meRow.team) : '#8C84A6');
-    $('#me-avatar').dataset.team = meRow?.team || '';
     $('#me-sub').innerHTML =
       `<span class="live-dot ${state.live ? 'on' : ''}" title="${state.live ? '실시간 연결됨' : '연결 중'}"></span>`
       + (meRow?.team ? `<span style="color:${teamColor(meRow.team)}">${meRow.team}팀</span>` : '팀 미정')
@@ -596,12 +600,12 @@
   }
 
   function renderTabs() {
-    // 게임방 탭은 숨김 (기능·DB 는 그대로). 다시 쓰려면 맨 앞에 ['rooms', ..., '게임'] 추가 (탭 아이콘 이미지 필요)
-    const tabs = [['board', 'home', '홈'], ['draw', 'draw', '뽑기'], ['prizes', 'prizes', '상품'], ['logs', 'logs', '기록']];
-    if (state.me.is_admin) tabs.push(['admin', 'admin', '관리']);
+    // 게임방 탭은 숨김 (기능·DB 는 그대로). 다시 쓰려면 맨 앞에 ['rooms', ICON.rooms, '게임'] 추가
+    const tabs = [['board', ICON.home, '홈'], ['draw', ICON.draw, '뽑기'], ['prizes', ICON.prizes, '상품'], ['logs', ICON.logs, '기록']];
+    if (state.me.is_admin) tabs.push(['admin', ICON.admin, '관리']);
     $('#tabs').innerHTML = tabs.map(([k, icon, label]) =>
       `<button class="tab ${state.tab === k ? 'active' : ''}" data-action="tab" data-tab="${k}">
-        <span class="tab-icon">${img(`icons/tab-${icon}-${state.tab === k ? 'on' : 'off'}.png`, 24)}</span><span class="tab-label">${label}</span></button>`).join('');
+        <span class="tab-icon">${icon}</span><span class="tab-label">${label}</span></button>`).join('');
     $app.querySelectorAll('section[data-view]').forEach((s) => {
       s.classList.toggle('hidden', s.dataset.view !== state.tab);
     });
@@ -721,7 +725,7 @@
       </div>
       <div class="hero-num"><b>${meRow?.balance ?? 0}</b><span>장</span></div>
       <div class="hero-actions">
-        <button class="btn gold" data-action="tab" data-tab="draw">${img('icons/icon-draw.png', 22)} 뽑기 하러 가기</button>
+        <button class="btn gold" data-action="tab" data-tab="draw">${ICON.draw} 뽑기 하러 가기</button>
         <button class="btn ghost" data-action="tab" data-tab="prizes">상품 보기</button>
       </div>`;
 
@@ -733,7 +737,7 @@
     }));
     const maxSum = Math.max(1, ...teamSums.map((t) => t.sum));
     $('#team-summary').innerHTML = teamSums.map((t) => `
-      <div class="team-bar" data-team="${t.team}" style="--c:${teamColor(t.team)}">
+      <div class="team-bar" style="--c:${teamColor(t.team)}">
         <span class="team-name">${t.team}팀</span>
         <span class="bar"><i style="width:${Math.round((t.sum / maxSum) * 100)}%"></i></span>
         <span class="team-sum">${t.sum}</span>
@@ -746,7 +750,7 @@
       const ok = s.issued === s.held + s.staked + drawn;
       const detail = `보유 ${s.held}${s.staked ? ` + 판돈 ${s.staked}` : ''} + 뽑기 ${drawn}`;
       $('#integrity').innerHTML = ok
-        ? `<div class="integrity ok">${img('icons/icon-check.png', 14)} 총 발행 ${s.issued}장 = ${detail} · 정합성 확인됨</div>`
+        ? `<div class="integrity ok">${ICON.check} 총 발행 ${s.issued}장 = ${detail} · 정합성 확인됨</div>`
         : `<div class="integrity bad">⚠ 수량 불일치 · 총 발행 ${s.issued}장 ≠ ${detail}</div>`;
     }
 
@@ -832,7 +836,7 @@
       ? '<div class="empty">아직 뽑은 복권이 없어요.</div>'
       : mine.map((d) => `
         <div class="draw-row ${d.is_blank ? 'blank' : 'win'}">
-          <div class="draw-emoji">${d.is_blank ? '' : prizeVisual(d.prize_id, d.emoji)}</div>
+          <div class="draw-emoji">${d.is_blank ? '😢' : prizeVisual(d.prize_id, d.emoji)}</div>
           <div style="flex:1">
             <div><b>${esc(d.grade)}</b> ${d.is_blank ? '' : esc(d.prize_name)}</div>
             <div class="small muted">${fmtTime(d.revealed_at || d.created_at)}</div>
@@ -846,7 +850,7 @@
     if (!btn) return;
     const reason = drawBlockReason();
     btn.disabled = !!reason;
-    btn.innerHTML = reason ? esc(reason) : `${img('icons/icon-draw.png', 22)} ${drawUI.mode === 'revealed' ? '한 장 더 뽑기' : '뽑기권 1장 사용하기'}`;
+    btn.innerHTML = reason ? esc(reason) : `${ICON.draw} ${drawUI.mode === 'revealed' ? '한 장 더 뽑기' : '뽑기권 1장 사용하기'}`;
   }
 
   // 카드 영역: 뽑기 흐름이 바뀔 때만 다시 그림
@@ -872,12 +876,12 @@
           <div class="pt-window" id="pt-window">
             <div class="pt-prize">
               <div class="pt-grade">${d ? esc(d.is_blank ? '꽝' : d.grade) : '?'}</div>
-              <div class="pt-emoji">${d && !d.is_blank ? prizeVisual(d.prize_id, d.emoji) : ''}</div>
+              <div class="pt-emoji">${d ? (d.is_blank ? '😢' : prizeVisual(d.prize_id, d.emoji)) : ''}</div>
               <div class="pt-pname">${d && !d.is_blank ? esc(d.prize_name) : ''}</div>
             </div>
             <div class="pt-cover ${peelable ? 'peelable' : ''}" id="pt-cover" style="width:${revealed ? 0 : 100}%">
               <div class="pt-cover-bg" id="pt-cover-bg"></div>
-              <div class="pt-tab">${img('icons/icon-arrow.png', 24)}</div>
+              <div class="pt-tab">${ICON.chevron}</div>
               <div class="pt-open"><b>${peelable ? 'OPEN →' : 'LUCKY'}</b><span>${peelable ? '오른쪽으로 밀어서 뜯기' : '뽑기권 1장으로 한 장'}</span></div>
             </div>
             <div class="pt-tear" id="pt-tear" aria-hidden="true"></div>
@@ -893,7 +897,7 @@
   }
 
   function resultHtml(d) {
-    if (d.is_blank) return `<div class="res lose"><div class="res-big">꽝!</div><div>다음 기회에</div></div>`;
+    if (d.is_blank) return `<div class="res lose"><div class="res-big">꽝!</div><div>다음 기회에 😢</div></div>`;
     const tier = prizeTier(d.prize_id);
     return `<div class="res win res-${tier}">
       ${FX[tier].label ? titleImg(tier, 'fx-title') : ''}
@@ -1192,20 +1196,20 @@
     const room = l.room_id ? `[${esc(roomOf(l.room_id)?.title ?? '방')}]` : '[삭제된 방]';
     const note = l.note ? ` <span class="muted">(${esc(l.note)})</span>` : '';
     switch (l.kind) {
-      case 'join':   return `${img('icons/icon-join.png', 18)} ${p} 입장${note}`;
-      case 'grant':  return `${img('icons/icon-give.png', 18)} ${a} → <b>${p}</b> 지급${note}`;
-      case 'revoke': return `${a} → <b>${p}</b> 회수${note}`;
-      case 'bet':    return `<b>${p}</b> ${room} 1장 걸기`;
-      case 'unbet':  return `<b>${p}</b> ${room} 걸기 취소`;
-      case 'payout': return `${img('icons/icon-trophy.png', 18)} <b>${p}</b> ${room} 승리!`;
-      case 'refund': return `<b>${p}</b> ${room} 환불`;
-      case 'room':   return `${a} ${l.room_id ? room : ''} ${esc(l.note ?? '')}`;
-      case 'admin':  return `${!p || a === p ? a : `${a} → ${p}`} ${esc(l.note ?? '')}`;
-      case 'reset':  return `${a} → ${p} ${esc(l.note ?? '')}`;
-      case 'delete': return `${a} ${esc(l.note ?? '')}`;
-      case 'team':   return `${img('icons/icon-team.png', 18)} ${a} → ${p} ${esc(l.note ?? '')}`;
-      case 'prize':  return `${img('icons/icon-give.png', 18)} ${a} ${esc(l.note ?? '')}`;
-      case 'draw':   return `${img('icons/icon-draw.png', 18)} <b>${p}</b> 복권 뽑기`;
+      case 'join':   return `👋 ${p} 입장${note}`;
+      case 'grant':  return `🎁 ${a} → <b>${p}</b> 지급${note}`;
+      case 'revoke': return `↩️ ${a} → <b>${p}</b> 회수${note}`;
+      case 'bet':    return `🎟️ <b>${p}</b> ${room} 1장 걸기`;
+      case 'unbet':  return `✖️ <b>${p}</b> ${room} 걸기 취소`;
+      case 'payout': return `🏆 <b>${p}</b> ${room} 승리!`;
+      case 'refund': return `💸 <b>${p}</b> ${room} 환불`;
+      case 'room':   return `🎲 ${a} ${l.room_id ? room : ''} ${esc(l.note ?? '')}`;
+      case 'admin':  return `🔑 ${!p || a === p ? a : `${a} → ${p}`} ${esc(l.note ?? '')}`;
+      case 'reset':  return `📱 ${a} → ${p} ${esc(l.note ?? '')}`;
+      case 'delete': return `🗑️ ${a} ${esc(l.note ?? '')}`;
+      case 'team':   return `👥 ${a} → ${p} ${esc(l.note ?? '')}`;
+      case 'prize':  return `🎁 ${a} ${esc(l.note ?? '')}`;
+      case 'draw':   return `🎟️ <b>${p}</b> 복권 뽑기`;
       default:       return `${esc(l.kind)} ${p}${note}`;
     }
   }
@@ -1237,8 +1241,8 @@
     // 뽑기 설정
     const open = drawOpen();
     $('#draw-open-text').innerHTML = open
-      ? '<b style="color:var(--green)"><i class="state-dot"></i> 뽑기 열림</b><div class="small muted">참가자들이 지금 뽑을 수 있어요</div>'
-      : '<b>뽑기 닫힘</b><div class="small muted">관리자 포함 아무도 뽑을 수 없어요</div>';
+      ? '<b style="color:var(--green)">🟢 뽑기 열림</b><div class="small muted">참가자들이 지금 뽑을 수 있어요</div>'
+      : '<b>⏸ 뽑기 닫힘</b><div class="small muted">관리자 포함 아무도 뽑을 수 없어요</div>';
     const $ob = $('#draw-open-btn');
     $ob.textContent = open ? '닫기' : '열기';
     $ob.className = `btn ${open ? 'red' : 'green'}`;
