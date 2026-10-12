@@ -86,7 +86,7 @@ git checkout dev
 ### 상품 넣기 (상품이 비어 있을 때 한 번만)
 
 ```sql
--- 워크샵 경품 시트 기준 (C상 현금 10만원은 비어퐁 전용이라 뽑기에 없음). 합계 200
+-- 워크샵 경품 시트 기준 (C상 현금 10만원은 비어퐁 전용이라 뽑기에 없음). 합계 205
 -- premium = 고급 상품: 한 사람이 고급 상품을 2개 이상 받지 않음 (일반 상품이 다 떨어지면 예외)
 insert into ticket_prizes (grade, name, emoji, quantity, remaining, sort, announce, premium, image_url) values
   ('A상', '현금 20만원', '💰',   1,   1, 1, true,  true,  'prizes/cash-200k.jpg'),
@@ -96,7 +96,7 @@ insert into ticket_prizes (grade, name, emoji, quantity, remaining, sort, announ
   ('F상', '스팸',        '🥫',   2,   2, 5, true,  false, null),
   ('G상', '현금 3만원',  '💵',   3,   3, 6, true,  false, 'prizes/cash-30k.jpg'),
   ('H상', '현금 1만원',  '💵',  10,  10, 7, true,  false, 'prizes/cash-10k.jpg'),
-  ('I상', '젤리',        '🍬', 180, 180, 8, false, false, 'prizes/jelly.jpg');
+  ('I상', '젤리',        '🍬', 185, 185, 8, false, false, 'prizes/jelly.jpg');
 ```
 
 상품 이름·수량·사진·무대 발표 여부는 이후 앱의 **상품 탭 → 수정**에서 바꾸면 됨 (배포 불필요).
