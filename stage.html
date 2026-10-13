@@ -173,7 +173,43 @@
   }
   @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; } }
   .sound-btn.on { color: var(--gold); border-color: var(--gold-line); }
+  .qr-btn { right: auto; left: 2vw; color: var(--gold); border-color: var(--gold-line); }
   body.idle .sound-btn { opacity: 0; transition: opacity .5s; }
+
+  /* 입장 QR (버튼 또는 Q 키). 당첨 발표(#announce)가 오면 그 위로 뜨도록 한 칸 아래 */
+  #qr-view {
+    position: fixed; inset: 0; z-index: 9; display: grid; place-items: center; cursor: pointer; overflow: hidden;
+    background:
+      radial-gradient(60% 70% at 30% 50%, rgba(124, 74, 190, .30), transparent 70%),
+      radial-gradient(40% 50% at 100% 0%, rgba(232, 194, 122, .08), transparent 60%),
+      var(--bg);
+    animation: fadeIn .35s ease;
+  }
+  #qr-view[hidden] { display: none; }
+  body.qr-open .qr-btn { display: none; }
+  #qr-view .an-rays { left: 32%; top: 50%; opacity: .35; animation-duration: 60s; background: url(assets/fx/rays-gold.png) center / contain no-repeat; }
+  .qr-body { position: relative; display: grid; grid-template-columns: auto auto; align-items: center; gap: 7vw; }
+  .qr-card {
+    padding: 2.6vh; border-radius: 3.2vh; background: #fff; line-height: 0;
+    box-shadow: 0 0 0 .5vh #C9963F, 0 0 0 1.2vh rgba(232, 194, 122, .2), 0 0 16vh -2vh rgba(232, 194, 122, .6);
+    animation: pop .6s .05s cubic-bezier(.2, 1.4, .4, 1) both;
+  }
+  .qr-card img { width: 62vh; height: 62vh; display: block; image-rendering: pixelated; }
+  .qr-info { display: flex; flex-direction: column; align-items: flex-start; animation: slideIn .6s .15s ease both; }
+  .qr-kicker { font-family: var(--num); font-size: 2vh; font-weight: 600; letter-spacing: .4em; color: var(--gold); }
+  .qr-title { margin-top: 1.6vh; font-size: 7vh; font-weight: 700; line-height: 1.2; letter-spacing: -.02em; }
+  .qr-title em { font-style: normal; background: var(--gold-text); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .qr-steps { display: flex; flex-direction: column; gap: 1.6vh; margin-top: 4.4vh; }
+  .qr-steps span { display: flex; align-items: center; gap: 1.8vh; font-size: 3vh; font-weight: 600; color: var(--muted); }
+  .qr-steps b { font-family: var(--num); font-size: 2vh; width: 4.4vh; height: 4.4vh; border-radius: 50%; display: grid; place-items: center; background: var(--gold-metal); color: var(--gold-ink); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .55); }
+  .qr-url {
+    margin-top: 4.4vh; padding: 1.4vh 2.4vh; border-radius: 1.6vh; font-family: var(--num); font-size: 2.6vh; font-weight: 600; letter-spacing: .02em;
+    background: var(--lit), var(--panel); box-shadow: inset 0 0 0 1px var(--gold-line);
+  }
+  .qr-joined { margin-top: 3.4vh; font-size: 2.4vh; color: var(--muted); display: flex; align-items: baseline; gap: .8vh; }
+  .qr-joined b { font-family: var(--num); font-size: 4.4vh; font-weight: 600; color: var(--gold); text-shadow: 0 0 2.4vh rgba(232, 194, 122, .45); }
+  .qr-hint { position: absolute; bottom: 2.6vh; left: 0; right: 0; text-align: center; font-size: 1.6vh; color: var(--dim); transition: opacity .5s; }
+  body.idle .qr-hint { opacity: 0; }
   /* Netlify 가 끼워 넣는 'Powered by Netlify' 배지 숨김 */
   #nl-badge-frame { display: none !important; }
 </style>
@@ -198,6 +234,26 @@
   </main>
 </div>
 <button class="sound-btn" id="sound-btn">소리 켜기</button>
+<button class="sound-btn qr-btn" id="qr-btn">입장 QR</button>
+
+<div id="qr-view" hidden>
+  <div class="an-rays"></div>
+  <div class="qr-body">
+    <div class="qr-card"><img src="print/qr.png" alt="입장 QR 코드"></div>
+    <div class="qr-info">
+      <div class="qr-kicker">LUCKY DRAW</div>
+      <div class="qr-title">폰 카메라로 찍고<br><em>입장하세요</em></div>
+      <div class="qr-steps">
+        <span><b>1</b>QR 찍기</span>
+        <span><b>2</b>이름 입력</span>
+        <span><b>3</b>뽑기권 받고 뽑기</span>
+      </div>
+      <div class="qr-url">workshopticket.netlify.app</div>
+      <div class="qr-joined" id="qr-joined"></div>
+    </div>
+  </div>
+  <div class="qr-hint">아무 곳이나 클릭하거나 Q · Esc 를 누르면 닫혀요</div>
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="config.js"></script>
@@ -236,13 +292,15 @@
 
   // ---------------- 데이터 ----------------
   async function load() {
-    const [pz, dr, st] = await Promise.all([
+    const [pz, dr, st, pl] = await Promise.all([
       sb.from('ticket_prizes').select('*').order('sort').order('id'),
       sb.from('ticket_draws').select('id,player_name,team,prize_id,grade,prize_name,emoji,is_blank,revealed_at')
         .eq('revealed', true).order('revealed_at', { ascending: false }).limit(2000),
       sb.from('ticket_settings').select('*'),
+      sb.from('ticket_players').select('id', { count: 'exact', head: true }),
     ]);
     if (pz.error || dr.error || st.error) { $('status').innerHTML = '<i></i>연결 오류'; return; }
+    $('qr-joined').innerHTML = pl.error ? '' : `지금 <b>${pl.count ?? 0}</b>명 입장했어요`;
     prizes = pz.data;
     draws = dr.data;
     open = st.data.some((s) => s.key === 'draw_open' && s.value === 'true');
@@ -395,10 +453,17 @@
     $('sound-btn').classList.toggle('on', sound);
     if (sound) { ac = ac || new AudioContext(); ac.resume(); }
   });
+  // 입장 QR: 버튼 · Q 키로 열고, 클릭 · Q · Esc 로 닫기
+  const qrView = $('qr-view');
+  const toggleQr = (show = qrView.hidden) => { qrView.hidden = !show; document.body.classList.toggle('qr-open', show); };
+  $('qr-btn').addEventListener('click', () => toggleQr(true));
+  qrView.addEventListener('click', () => toggleQr(false));
   document.addEventListener('keydown', (e) => {
     if (e.key === 'f' || e.key === 'F') {
       if (document.fullscreenElement) document.exitFullscreen(); else document.documentElement.requestFullscreen?.();
     }
+    if (e.code === 'KeyQ') toggleQr();   // 한글 입력 상태(ㅂ)에서도 동작
+    if (e.key === 'Escape') toggleQr(false);
   });
   // 마우스를 안 움직이면 버튼 숨김
   let idleTimer;
@@ -412,7 +477,7 @@
   let t = null;
   const schedule = () => { clearTimeout(t); t = setTimeout(load, 200); };
   const ch = sb.channel('ticket-stage');
-  for (const table of ['ticket_prizes', 'ticket_draws', 'ticket_settings']) {
+  for (const table of ['ticket_prizes', 'ticket_draws', 'ticket_settings', 'ticket_players']) {
     ch.on('postgres_changes', { event: '*', schema: 'public', table }, schedule);
   }
   ch.subscribe();
