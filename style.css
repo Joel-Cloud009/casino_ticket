@@ -589,9 +589,9 @@ button.chip.pick:hover { background: var(--yellow); }
   position: relative; height: 228px; border-radius: var(--radius-md); overflow: hidden;
   background: var(--cream); border: var(--stroke-md) solid var(--ink);
 }
-/* 드러나는 상품: 왼쪽 위부터 등급 칩 → 사진 → 이름 (가로 한 줄, 줄바꿈 없음) */
+/* 드러나는 상품: 가운데에 등급 칩 → 사진 → 이름 (가로 한 줄, 줄바꿈 없음) */
 .pt-prize {
-  position: absolute; inset: 0; padding: 14px; display: flex; flex-direction: column; align-items: flex-start; gap: 10px;
+  position: absolute; inset: 0; padding: 14px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; text-align: center;
 }
 .pt-grade {
   padding: 1px 12px; border-radius: var(--radius-pill); background: var(--red); border: var(--stroke-sm) solid var(--ink);
