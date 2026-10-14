@@ -1,12 +1,12 @@
 {
-  "name": "SC사업본부 대부도 워크샵",
-  "short_name": "대부도 워크샵",
+  "name": "혁혁 브라더스와 함께하는 SC사업본부 워크샵",
+  "short_name": "혁혁 브라더스",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#0D0A17",
-  "theme_color": "#0D0A17",
+  "background_color": "#FFF6E5",
+  "theme_color": "#FFF6E5",
   "lang": "ko",
   "icons": [
     { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },

@@ -3,212 +3,318 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>무대 화면 · 대부도 워크샵</title>
+<title>무대 화면 · 혁혁 브라더스와 함께하는 SC사업본부 워크샵</title>
 <link rel="icon" type="image/png" href="icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=Unbounded:wght@500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bagel+Fat+One&family=Jua&family=Gowun+Dodum&display=swap">
 <style>
-  /* 앱과 같은 '벨벳 라운지' 톤: 짙은 자주빛 남색 + 샴페인 골드 */
+  /* 앱과 같은 'D-2 팝 축제 · 혁혁 브라더스' 톤: 크림 점무늬 + 잉크 테두리 스티커 (무대는 테두리 3px · 그림자 5px)
+     크기는 1280×720 시안 px 값 × --u (화면 크기에 맞춰 늘고 줄어듦) */
   :root {
-    --bg: #0D0A17;
-    --panel: #17122A;
-    --panel-2: #211A36;
-    --line: rgba(255, 255, 255, .07);
-    --line-2: rgba(255, 255, 255, .12);
-    --text: #F4F1FA;
-    --muted: #A49DB8;
-    --dim: #7D7690;
-    --gold: #E8C27A;
-    --gold-soft: rgba(232, 194, 122, .14);
-    --gold-line: rgba(232, 194, 122, .3);
-    --gold-ink: #1A1206;
-    --green: #8FE3B5;
-    --num: "Unbounded", "IBM Plex Sans KR", sans-serif;
-    --gold-metal: linear-gradient(180deg, #F5DCA4, #DDAE5C);
-    --gold-text: linear-gradient(180deg, #FBE6B8, #D9A955);
-    --lit: linear-gradient(180deg, rgba(255, 255, 255, .04), rgba(255, 255, 255, 0) 45%);
-    --paper: radial-gradient(120% 100% at 50% 0%, #FFFFFF, #F3EAD8);
+    --cream: #FFF6E5; --cream-dot: #F2E3C4; --paper: #FFFFFF;
+    --ink: #1E1A2E; --ink-muted: #6B6478;
+    --red: #FF4D3D; --yellow: #FFD23F; --yellow-soft: #FFF1C2;
+    --blue: #3FA9F5; --blue-deep: #1E86E0; --mint: #2DBE8C; --grape: #9B7BEA;
+    --stamp-red: #D92A1F; --sold-bg: #F3EBDD; --sky: #DDF0FF;
+    --font-display: "Bagel Fat One", "Black Han Sans", sans-serif;
+    --font-label: "Jua", "Gowun Dodum", sans-serif;
+    --font-body: "Gowun Dodum", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
+    --u: min(calc(100vw / 1280), calc(100vh / 720));
   }
   * { box-sizing: border-box; }
   html, body { margin: 0; height: 100%; }
   body {
-    color: var(--text); overflow: hidden;
-    font-family: "IBM Plex Sans KR", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
-    background:
-      radial-gradient(80% 60% at 50% -15%, rgba(124, 74, 190, .32), transparent 65%),
-      radial-gradient(50% 40% at 100% 0%, rgba(232, 194, 122, .10), transparent 60%),
-      var(--bg);
+    color: var(--ink); overflow: hidden; font-family: var(--font-body);
+    background: radial-gradient(var(--cream-dot) calc(2 * var(--u)), transparent calc(2 * var(--u))) 0 0 / calc(24 * var(--u)) calc(24 * var(--u)), var(--cream);
   }
-  body::before {
-    content: ''; position: fixed; inset: 0; pointer-events: none; opacity: .06; mix-blend-mode: overlay;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  b, strong { font-weight: 400; }
+  .wrap { position: relative; height: 100%; display: grid; grid-template-rows: auto 1fr; padding: calc(20 * var(--u)) calc(30 * var(--u)) calc(26 * var(--u)); gap: calc(18 * var(--u)); }
+
+  /* 혁 · 혁 별 스티커: 별 안 "혁"은 Jua + 흰색 + 잉크 그림자 하나 (Bagel·외곽선 금지 → "헉"처럼 읽힘) */
+  .hy-star { position: relative; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+  .hy-star svg { position: absolute; left: 0; top: 0; width: 100%; height: 100%; overflow: visible; }
+  .hy-star span { position: relative; font-family: var(--font-label); line-height: 1; color: #FFFFFF; }
+  .hl { padding: 0 calc(3 * var(--u)); background: linear-gradient(transparent 58%, var(--yellow) 58%, var(--yellow) 92%, transparent 92%); }
+
+  /* 상단 바 (StageHeader) */
+  header { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: calc(24 * var(--u)); }
+  .title { display: flex; align-items: center; gap: calc(14 * var(--u)); min-width: 0; }
+  .title .stars { display: flex; align-items: center; flex-shrink: 0; }
+  .title .stars .hy-star { width: calc(64 * var(--u)); height: calc(64 * var(--u)); }
+  .title .stars .hy-star span { font-size: calc(38 * var(--u)); text-shadow: calc(2 * var(--u)) calc(2 * var(--u)) 0 var(--ink); }
+  .title .stars .hy-star + .hy-star { margin-left: calc(-5 * var(--u)); }
+  .title-text { display: flex; flex-direction: column; align-items: flex-start; gap: calc(5 * var(--u)); min-width: 0; }
+  .t-bros { display: flex; align-items: baseline; gap: calc(5 * var(--u)); white-space: nowrap; }
+  .t-bros b { font-family: var(--font-display); font-size: calc(24 * var(--u)); line-height: 1; }
+  .t-bros span { font-family: var(--font-label); font-size: calc(19 * var(--u)); line-height: 1; }
+  .t-name { font-family: var(--font-display); font-size: calc(32 * var(--u)); line-height: 1.08; white-space: nowrap; }
+  .t-date {
+    padding: 0 calc(12 * var(--u)); border-radius: 99px; background: var(--yellow); border: calc(2.5 * var(--u)) solid var(--ink); box-shadow: calc(2 * var(--u)) calc(2 * var(--u)) 0 var(--ink);
+    font-family: var(--font-label); font-size: calc(15 * var(--u)); line-height: calc(22 * var(--u)); white-space: nowrap;
   }
-  .wrap { position: relative; height: 100%; display: grid; grid-template-rows: auto 1fr; padding: 3vh 2.6vw; gap: 3vh; }
+  .status {
+    display: inline-flex; align-items: center; gap: calc(10 * var(--u)); padding: calc(8 * var(--u)) calc(22 * var(--u)); border-radius: 99px;
+    background: var(--sold-bg); border: calc(3 * var(--u)) solid var(--ink); box-shadow: calc(4 * var(--u)) calc(4 * var(--u)) 0 var(--ink);
+    font-family: var(--font-label); font-size: calc(24 * var(--u)); line-height: 1.2; white-space: nowrap; transform: rotate(-2deg);
+  }
+  .status i { width: calc(14 * var(--u)); height: calc(14 * var(--u)); border-radius: 50%; background: var(--paper); border: calc(2 * var(--u)) solid var(--ink); flex-shrink: 0; }
+  .status.open { background: var(--mint); }
+  .status.open i { animation: live 1.6s ease-in-out infinite; }
+  @keyframes live { 50% { transform: scale(.6); } }
+  .counter {
+    justify-self: end; width: calc(330 * var(--u)); padding: calc(10 * var(--u)) calc(16 * var(--u)) calc(12 * var(--u)); border-radius: calc(20 * var(--u));
+    background: var(--paper); border: calc(3 * var(--u)) solid var(--ink); box-shadow: calc(5 * var(--u)) calc(5 * var(--u)) 0 var(--ink);
+    display: flex; flex-direction: column; gap: calc(8 * var(--u));
+  }
+  .counter-row { display: flex; align-items: flex-end; justify-content: space-between; gap: calc(8 * var(--u)); }
+  .counter .label { font-family: var(--font-label); font-size: calc(17 * var(--u)); padding-bottom: calc(4 * var(--u)); white-space: nowrap; }
+  .counter .num { font-family: var(--font-display); font-size: calc(46 * var(--u)); line-height: 1; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .counter .num span { font-family: var(--font-label); font-size: calc(22 * var(--u)); color: var(--ink-muted); }
+  .counter .bar { height: calc(18 * var(--u)); border-radius: 99px; border: calc(2.5 * var(--u)) solid var(--ink); background: var(--cream); overflow: hidden; }
+  .counter .bar i {
+    display: block; height: 100%; border-right: calc(2.5 * var(--u)) solid var(--ink); transition: width .6s ease;
+    background: repeating-linear-gradient(135deg, var(--yellow) 0 calc(10 * var(--u)), #FFC21A calc(10 * var(--u)) calc(20 * var(--u)));
+  }
 
-  header { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 2vw; }
-  .title { display: flex; flex-direction: column; gap: .4vh; }
-  .title small { font-family: var(--num); font-size: 1.5vh; letter-spacing: .3em; color: var(--gold); }
-  .title b { font-size: 4.6vh; font-weight: 700; letter-spacing: -.02em; }
-  .title b em { font-style: normal; background: var(--gold-text); -webkit-background-clip: text; background-clip: text; color: transparent; }
-  .status { display: inline-flex; align-items: center; gap: 1vh; font-size: 2vh; font-weight: 600; padding: 1vh 2vh; border-radius: 99px; border: 1px solid var(--line-2); color: var(--muted); }
-  .status i { width: 1vh; height: 1vh; border-radius: 50%; background: var(--dim); }
-  .status.open { color: var(--green); border-color: rgba(143, 227, 181, .35); background: rgba(143, 227, 181, .08); }
-  .status.open i { background: var(--green); animation: live 1.6s ease-out infinite; }
-  @keyframes live { 0% { box-shadow: 0 0 0 0 rgba(143, 227, 181, .65); } 100% { box-shadow: 0 0 0 1.2vh rgba(143, 227, 181, 0); } }
-  .counter { justify-self: end; display: flex; flex-direction: column; align-items: flex-end; gap: 1vh; min-width: 26vw; }
-  .counter .label { font-size: 1.8vh; color: var(--muted); }
-  .counter .num { font-family: var(--num); font-size: 7.5vh; font-weight: 600; line-height: 1; font-variant-numeric: tabular-nums; color: var(--gold); text-shadow: 0 0 3vh rgba(232, 194, 122, .4); }
-  .counter .num span { color: var(--dim); font-size: 3.6vh; text-shadow: none; }
-  .counter .bar { width: 100%; height: .6vh; border-radius: .3vh; background: rgba(255, 255, 255, .08); overflow: hidden; box-shadow: inset 0 1px 2px rgba(0, 0, 0, .4); }
-  .counter .bar i { display: block; height: 100%; border-radius: .3vh; background: var(--gold-metal); box-shadow: 0 0 1.4vh rgba(232, 194, 122, .6); transition: width .6s ease; }
+  main { display: grid; grid-template-columns: minmax(0, 1fr) calc(360 * var(--u)); gap: calc(24 * var(--u)); min-height: 0; }
 
-  main { display: grid; grid-template-columns: 1fr 28vw; gap: 2vw; min-height: 0; }
-  .prizes { display: grid; grid-auto-rows: min-content; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.6vh; align-content: start; overflow: hidden; }
+  /* 상품 현황 (StagePrizeGrid) */
+  .prizes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-rows: min-content; gap: calc(14 * var(--u)); align-content: start; overflow: hidden; min-height: 0; padding: 0 calc(5 * var(--u)) calc(5 * var(--u)) 0; }
   .prize {
-    background: var(--lit), var(--panel); border: 1px solid rgba(255, 255, 255, .06); border-radius: 2.2vh;
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .06), 0 2vh 4vh -2.6vh rgba(0, 0, 0, .9);
-    padding: 1.6vh 2vh 1.6vh 1.6vh; display: grid; grid-template-columns: auto 1fr auto; gap: 1.8vh; align-items: center;
+    position: relative; padding: calc(10 * var(--u)) calc(18 * var(--u)) calc(10 * var(--u)) calc(10 * var(--u)); border-radius: calc(20 * var(--u));
+    background: var(--paper); border: calc(3 * var(--u)) solid var(--ink); box-shadow: calc(4 * var(--u)) calc(4 * var(--u)) 0 var(--ink);
+    display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: calc(14 * var(--u)); align-items: center;
   }
-  .prize.first {
-    border-color: var(--gold-line);
-    background: radial-gradient(90% 100% at 100% 0%, rgba(232, 194, 122, .16), transparent 60%), var(--lit), var(--panel);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .06), 0 0 5vh -2.4vh rgba(232, 194, 122, .7);
+  .prize.first { background: var(--yellow); }
+  .prize.soldout:not(.first) { background: var(--sold-bg); }
+  .p-emoji {
+    position: relative; width: calc(84 * var(--u)); height: calc(84 * var(--u)); border-radius: calc(14 * var(--u)); overflow: hidden;
+    border: calc(2.5 * var(--u)) solid var(--ink); display: grid; place-items: center; font-size: calc(44 * var(--u));
+    background: repeating-linear-gradient(135deg, var(--cream) 0 calc(9 * var(--u)), #FBEBCB calc(9 * var(--u)) calc(18 * var(--u)));
   }
-  .prize.soldout { opacity: .45; }
-  .prize.soldout .p-emoji { filter: grayscale(1); }
-  .p-emoji { position: relative; font-size: 6vh; width: 10.5vh; height: 10.5vh; border-radius: 1.6vh; background: var(--paper); display: grid; place-items: center; overflow: hidden; }
-  .p-emoji .photo { width: 100%; height: 100%; object-fit: cover; mix-blend-mode: multiply; }
-  .prize.soldout .p-emoji::after {
-    content: 'SOLD OUT'; position: absolute; padding: .3vh .8vh; border-radius: .6vh; transform: rotate(-10deg);
-    font-family: var(--num); font-size: 1.3vh; font-weight: 700; letter-spacing: .1em;
-    color: #B3263B; border: .25vh solid #B3263B; background: rgba(255, 255, 255, .85);
+  .p-emoji .photo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; background: var(--paper); }
+  .prize.soldout .p-emoji .photo { filter: grayscale(1); opacity: .5; }
+  .stamp {
+    position: absolute; left: 50%; top: 50%; width: calc(68 * var(--u)); height: calc(68 * var(--u)); margin: calc(-34 * var(--u)) 0 0 calc(-34 * var(--u)); border-radius: 50%;
+    border: calc(3 * var(--u)) solid var(--stamp-red); box-shadow: inset 0 0 0 calc(2 * var(--u)) var(--paper), inset 0 0 0 calc(4 * var(--u)) var(--stamp-red);
+    background: rgba(255, 255, 255, .9); color: var(--stamp-red); transform: rotate(-14deg);
+    display: flex; align-items: center; justify-content: center; text-align: center;
+    font-family: var(--font-display); font-size: calc(14 * var(--u)); line-height: 1.05;
   }
-  .p-grade { display: inline-block; font-family: var(--num); font-size: 1.5vh; font-weight: 700; background: var(--gold-soft); color: var(--gold); padding: .3vh 1vh; border-radius: .8vh; }
-  .prize.first .p-grade { background: var(--gold-metal); color: var(--gold-ink); }
-  .p-name { font-size: 2.7vh; font-weight: 700; margin-top: .6vh; }
+  .p-info { display: flex; flex-direction: column; align-items: flex-start; gap: calc(6 * var(--u)); min-width: 0; }
+  .p-grade {
+    padding: 0 calc(10 * var(--u)); border-radius: 99px; background: var(--yellow); border: calc(2 * var(--u)) solid var(--ink);
+    font-family: var(--font-display); font-size: calc(16 * var(--u)); line-height: calc(24 * var(--u)); white-space: nowrap;
+  }
+  .prize.first .p-grade { background: var(--red); color: var(--paper); }
+  .p-name { font-family: var(--font-label); font-size: calc(22 * var(--u)); line-height: 1.1; }
+  .p-winners { max-width: 100%; font-size: calc(14 * var(--u)); color: var(--ink-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .p-left { text-align: right; }
-  .p-left b { font-family: var(--num); font-size: 4.4vh; font-weight: 600; line-height: 1; }
-  .prize.first .p-left b { color: var(--gold); text-shadow: 0 0 2vh rgba(232, 194, 122, .45); }
-  .p-left span { display: block; font-size: 1.6vh; color: var(--muted); margin-top: .4vh; }
-  .p-winners { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: .8vh; }
-  .p-winners span { font-size: 1.8vh; font-weight: 600; padding: .4vh 1.2vh; border-radius: 99px; background: rgba(255, 255, 255, .05); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .06); }
+  .p-left b { display: block; font-family: var(--font-display); font-size: calc(38 * var(--u)); line-height: 1; }
+  .p-left span { display: block; font-family: var(--font-label); font-size: calc(13 * var(--u)); color: var(--ink-muted); margin-top: calc(4 * var(--u)); white-space: nowrap; }
+  .prize.first .p-winners, .prize.first .p-left span { color: var(--ink); }
+  /* 상품이 9개 이상이면 한 단계 작게 (한 화면에 다 들어가게) */
+  .prizes.dense { gap: calc(10 * var(--u)); }
+  .prizes.dense .prize { padding-top: calc(6 * var(--u)); padding-bottom: calc(6 * var(--u)); }
+  .prizes.dense .p-emoji { width: calc(64 * var(--u)); height: calc(64 * var(--u)); }
+  .prizes.dense .stamp { transform: rotate(-14deg) scale(.8); }
+  .prizes.dense .p-name { font-size: calc(19 * var(--u)); }
+  .prizes.dense .p-left b { font-size: calc(30 * var(--u)); }
 
+  /* 실시간 결과 (StageFeed) */
   .feed {
-    background: var(--lit), var(--panel); border: 1px solid rgba(255, 255, 255, .06); border-radius: 2.2vh; padding: 2.2vh;
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .06), 0 2vh 4vh -2.6vh rgba(0, 0, 0, .9);
-    display: flex; flex-direction: column; min-height: 0;
+    padding: calc(14 * var(--u)) calc(14 * var(--u)) calc(12 * var(--u)); border-radius: calc(22 * var(--u));
+    background: var(--paper); border: calc(3 * var(--u)) solid var(--ink); box-shadow: calc(5 * var(--u)) calc(5 * var(--u)) 0 var(--ink);
+    display: flex; flex-direction: column; gap: calc(5 * var(--u)); min-height: 0; overflow: hidden;
   }
-  .feed h2 { margin: 0 0 1.6vh; font-size: 2.2vh; font-weight: 700; display: flex; align-items: center; gap: 1vh; }
-  .feed h2 i { width: 1vh; height: 1vh; border-radius: 50%; background: var(--green); animation: live 1.6s ease-out infinite; }
-  .feed-list { display: flex; flex-direction: column; gap: .6vh; overflow: hidden; }
-  .feed-item { display: flex; align-items: center; gap: 1.4vh; padding: 1.1vh 1.2vh; border-radius: 1.4vh; font-size: 2.2vh; background: rgba(255, 255, 255, .02); }
-  .feed-item.enter { animation: slideIn .5s ease, glow 1.6s ease; }
-  @keyframes glow { 0% { box-shadow: 0 0 0 1px var(--gold), 0 0 3vh rgba(232, 194, 122, .6); } 100% { box-shadow: none; } }
-  .feed-item.big { background: linear-gradient(90deg, rgba(232, 194, 122, .18), rgba(232, 194, 122, .04)); box-shadow: inset 0 0 0 1px var(--gold-line); }
-  .feed-item .fe { width: 4.6vh; height: 4.6vh; border-radius: 1vh; background: var(--paper); display: grid; place-items: center; font-size: 2.8vh; overflow: hidden; flex-shrink: 0; }
-  .feed-item .fe .photo { width: 100%; height: 100%; object-fit: cover; mix-blend-mode: multiply; }
-  .feed-item .fn { flex: 1; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .feed-item .fr { font-family: var(--num); font-size: 1.8vh; font-weight: 600; color: var(--muted); }
-  .feed-item.big .fr { color: var(--gold); }
-  @keyframes slideIn { from { transform: translateX(3vw); opacity: 0; } }
-  .team { display: inline-block; font-size: .78em; font-weight: 700; padding: .1em .55em; border-radius: .5em; margin-right: .4em;
-    background: color-mix(in srgb, var(--c) 18%, transparent); color: var(--c); }
-  .empty { color: var(--muted); font-size: 2.2vh; text-align: center; padding: 4vh 0; }
+  .feed h2 { margin: 0; padding: 0 calc(4 * var(--u)) calc(4 * var(--u)); display: flex; align-items: center; justify-content: space-between; font-family: var(--font-label); font-weight: 400; font-size: calc(22 * var(--u)); }
+  .live {
+    display: flex; align-items: center; gap: calc(6 * var(--u)); padding: 0 calc(10 * var(--u)); border-radius: 99px; background: var(--mint); border: calc(2 * var(--u)) solid var(--ink);
+    font-family: var(--font-label); font-size: calc(13 * var(--u)); letter-spacing: .06em; line-height: calc(22 * var(--u));
+  }
+  .live i { width: calc(8 * var(--u)); height: calc(8 * var(--u)); border-radius: 50%; background: var(--paper); border: calc(1.5 * var(--u)) solid var(--ink); animation: live 1.6s ease-in-out infinite; }
+  .feed-list { display: flex; flex-direction: column; gap: calc(5 * var(--u)); overflow: hidden; }
+  .feed-item {
+    display: flex; align-items: center; gap: calc(10 * var(--u)); padding: calc(4 * var(--u)) calc(8 * var(--u));
+    border-radius: calc(14 * var(--u)); border: calc(2 * var(--u)) solid transparent;
+  }
+  .feed-item.big { background: var(--yellow-soft); border-color: var(--ink); }
+  .feed-item.newest { background: var(--yellow); border-color: var(--ink); }
+  .feed-item.enter { animation: slideIn .5s cubic-bezier(.2, 1.4, .4, 1); }
+  @keyframes slideIn { from { transform: translateX(calc(40 * var(--u))) rotate(2deg); opacity: 0; } }
+  .feed-item .fe {
+    width: calc(36 * var(--u)); height: calc(36 * var(--u)); border-radius: calc(10 * var(--u)); flex-shrink: 0; overflow: hidden;
+    background: var(--paper); border: calc(2 * var(--u)) solid var(--ink); display: grid; place-items: center; font-size: calc(20 * var(--u));
+  }
+  .feed-item .fe .photo { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .feed-item .fe svg { width: 70%; height: 70%; }
+  .feed-item .fn { flex: 1; min-width: 0; display: flex; align-items: center; gap: calc(8 * var(--u)); font-family: var(--font-label); font-size: calc(19 * var(--u)); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .feed-item .fr {
+    flex-shrink: 0; padding: 0 calc(9 * var(--u)); border-radius: calc(8 * var(--u)); background: var(--cream); border: calc(2 * var(--u)) solid var(--ink);
+    font-family: var(--font-label); font-size: calc(15 * var(--u)); line-height: calc(22 * var(--u));
+  }
+  .feed-item.big .fr, .feed-item.newest .fr { background: var(--paper); }
+  .team {
+    display: inline-block; padding: 0 .6em; border-radius: 99px; background: var(--c); border: calc(2 * var(--u)) solid var(--ink); color: var(--ink);
+    font-family: var(--font-label); font-size: calc(13 * var(--u)); line-height: calc(20 * var(--u)); white-space: nowrap; flex-shrink: 0;
+  }
+  .empty { color: var(--ink-muted); font-size: calc(18 * var(--u)); text-align: center; padding: calc(30 * var(--u)) 0; }
 
-  /* 당첨 발표 */
+  /* 당첨 발표 (AnnounceStage): 햇살 바탕 · 노란 별폭발 위 상품 카드 · 오른쪽 외침과 당첨자 */
   #announce {
-    position: fixed; inset: 0; z-index: 10; display: grid; place-items: center; text-align: center;
-    background: rgba(9, 7, 17, .94);
-    animation: fadeIn .35s ease;
+    position: fixed; inset: 0; z-index: 10; overflow: hidden; display: grid; place-items: center;
+    background: var(--cream); animation: fadeIn .35s ease;
   }
   #announce.hide { animation: fadeOut .5s ease forwards; }
   @keyframes fadeIn { from { opacity: 0; } }
   @keyframes fadeOut { to { opacity: 0; } }
-  .an-rays { position: absolute; width: 150vh; height: 150vh; left: 50%; top: 46%; margin: -75vh 0 0 -75vh;
-    background: repeating-conic-gradient(rgba(232, 194, 122, .07) 0 8deg, transparent 8deg 16deg);
-    animation: spin 24s linear infinite; border-radius: 50%;
-    -webkit-mask-image: radial-gradient(circle, #000 20%, transparent 65%); mask-image: radial-gradient(circle, #000 20%, transparent 65%); }
+  /* 햇살 가운데 = 별폭발 가운데 (시안 400, 364) */
+  .an-rays {
+    position: absolute; width: 300vmax; height: 300vmax;
+    left: calc(50% - 240 * var(--u) - 150vmax); top: calc(50% + 4 * var(--u) - 150vmax);
+    background: repeating-conic-gradient(var(--sky) 0 7deg, var(--cream) 7deg 14deg);
+    animation: spin 60s linear infinite;
+  }
+  #announce.tier-legend .an-rays { background: repeating-conic-gradient(var(--sky) 0 7deg, var(--cream) 7deg 14deg, #FFE7A0 14deg 21deg, var(--cream) 21deg 28deg); animation-duration: 30s; }
   @keyframes spin { to { transform: rotate(360deg); } }
-  .an-body { position: relative; display: flex; flex-direction: column; align-items: center; }
-  .an-congrats { font-family: var(--num); font-size: 2.4vh; font-weight: 600; letter-spacing: .4em; color: var(--gold); animation: pop .6s cubic-bezier(.2, 1.4, .4, 1); }
-  .an-emoji { font-size: 20vh; line-height: 1.1; margin-top: 3vh; animation: pop .7s .1s cubic-bezier(.2, 1.4, .4, 1) both; }
-  .an-emoji .photo { height: 34vh; max-width: 56vw; object-fit: contain; border-radius: 2.4vh; display: block; background: var(--paper); padding: 1.6vh; box-shadow: 0 0 0 .4vh #C9963F, 0 0 0 .8vh rgba(232, 194, 122, .25), 0 0 12vh -2vh rgba(232, 194, 122, .7); }
-  .an-grade { display: inline-block; font-family: var(--num); font-size: 4vh; font-weight: 700; background: var(--gold-metal); color: var(--gold-ink); padding: .8vh 3vh; border-radius: 1.6vh; margin-top: 3.4vh; box-shadow: inset 0 1px 0 rgba(255, 255, 255, .55), 0 1.4vh 3vh -1.4vh rgba(232, 194, 122, .8); animation: pop .6s .25s cubic-bezier(.2, 1.4, .4, 1) both; }
-  .an-prize { font-size: 4.6vh; font-weight: 700; margin-top: 1.6vh; animation: pop .6s .35s cubic-bezier(.2, 1.4, .4, 1) both; }
-  .an-who { font-size: 8.5vh; font-weight: 700; margin-top: 2.4vh; letter-spacing: -.01em; animation: pop .7s .5s cubic-bezier(.2, 1.4, .4, 1) both;
-    background: var(--gold-text); -webkit-background-clip: text; background-clip: text; color: transparent; filter: drop-shadow(0 0 3vh rgba(232, 194, 122, .45)); }
-  .an-who .team { -webkit-text-fill-color: var(--c); }
-  .an-who .team { font-size: .42em; vertical-align: middle; }
+  .an-frame { position: relative; z-index: 2; width: calc(1280 * var(--u)); height: calc(720 * var(--u)); }
+  .an-deco { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .an-burst { position: absolute; left: calc(105 * var(--u)); top: calc(69 * var(--u)); width: calc(590 * var(--u)); height: calc(590 * var(--u)); overflow: visible; animation: burst-in .7s cubic-bezier(.2, 1.4, .4, 1) both; }
+  @keyframes burst-in { from { transform: scale(.2) rotate(-40deg); opacity: 0; } }
+  .an-card {
+    position: absolute; left: calc(196 * var(--u)); top: calc(200 * var(--u)); width: calc(408 * var(--u));
+    padding: calc(14 * var(--u)) calc(16 * var(--u)) calc(16 * var(--u)); border-radius: calc(24 * var(--u));
+    background: var(--paper); border: calc(3.5 * var(--u)) solid var(--ink); box-shadow: calc(8 * var(--u)) calc(8 * var(--u)) 0 var(--ink);
+    transform: rotate(-4deg); display: flex; flex-direction: column; align-items: flex-start; gap: calc(12 * var(--u));
+    animation: card-in .7s .12s cubic-bezier(.2, 1.4, .4, 1) both;
+  }
+  @keyframes card-in { from { transform: rotate(-16deg) scale(.4); opacity: 0; } }
+  .an-grade {
+    padding: 0 calc(16 * var(--u)); border-radius: 99px; background: var(--red); border: calc(2.5 * var(--u)) solid var(--ink); box-shadow: calc(2 * var(--u)) calc(2 * var(--u)) 0 var(--ink);
+    color: var(--paper); font-family: var(--font-display); font-size: calc(26 * var(--u)); line-height: calc(38 * var(--u)); white-space: nowrap;
+  }
+  .an-emoji {
+    width: 100%; height: calc(226 * var(--u)); border-radius: calc(14 * var(--u)); overflow: hidden;
+    background: var(--cream); border: calc(2.5 * var(--u)) solid var(--ink); display: grid; place-items: center; font-size: calc(140 * var(--u)); line-height: 1;
+  }
+  .an-emoji .photo { width: 100%; height: 100%; object-fit: cover; mix-blend-mode: multiply; display: block; }
+  .an-tape { position: absolute; left: calc(150 * var(--u)); top: calc(-18 * var(--u)); width: calc(90 * var(--u)); height: calc(26 * var(--u)); background: rgba(63, 169, 245, .55); border: calc(2 * var(--u)) solid var(--ink); transform: rotate(-3deg); }
+  .an-text { position: absolute; left: calc(740 * var(--u)); top: 0; bottom: 0; width: calc(500 * var(--u)); display: flex; flex-direction: column; justify-content: center; align-items: flex-start; }
+  /* 외침: Bagel + 잉크 4px 외곽선 + 10px 그림자 */
+  .an-congrats {
+    --o: calc(4 * var(--u)); --sh: calc(10 * var(--u));
+    font-family: var(--font-display); font-size: calc(150 * var(--u)); line-height: 1; color: var(--red); white-space: nowrap;
+    transform: rotate(-6deg); transform-origin: left center;
+    text-shadow:
+      calc(var(--o) * -1) calc(var(--o) * -1) 0 var(--ink), var(--o) calc(var(--o) * -1) 0 var(--ink),
+      calc(var(--o) * -1) var(--o) 0 var(--ink), var(--o) var(--o) 0 var(--ink),
+      0 calc(var(--o) * -1) 0 var(--ink), 0 var(--o) 0 var(--ink),
+      calc(var(--o) * -1) 0 0 var(--ink), var(--o) 0 0 var(--ink),
+      var(--sh) var(--sh) 0 var(--ink);
+    animation: shout-in .7s .3s cubic-bezier(.2, 1.6, .4, 1) both;
+  }
+  #announce.tier-epic .an-congrats { font-size: calc(86 * var(--u)); color: var(--yellow); --o: calc(3.5 * var(--u)); --sh: calc(8 * var(--u)); }
+  #announce.tier-rare .an-congrats { font-size: calc(96 * var(--u)); color: var(--blue-deep); --o: calc(3.5 * var(--u)); --sh: calc(8 * var(--u)); }
+  @keyframes shout-in { from { transform: rotate(-20deg) scale(.3); opacity: 0; } }
+  .an-pill {
+    margin-top: calc(34 * var(--u)); padding: calc(4 * var(--u)) calc(26 * var(--u)); border-radius: 99px;
+    background: var(--yellow); border: calc(3 * var(--u)) solid var(--ink); box-shadow: calc(4 * var(--u)) calc(4 * var(--u)) 0 var(--ink);
+    font-family: var(--font-label); font-size: calc(34 * var(--u)); white-space: nowrap; animation: pop .6s .45s cubic-bezier(.2, 1.4, .4, 1) both;
+  }
+  .an-prize { margin-top: calc(18 * var(--u)); font-family: var(--font-display); font-size: calc(62 * var(--u)); line-height: 1.1; animation: pop .6s .55s cubic-bezier(.2, 1.4, .4, 1) both; }
+  .an-rule { margin: calc(24 * var(--u)) 0; width: calc(440 * var(--u)); border-top: calc(4 * var(--u)) dashed var(--ink); }
+  .an-who { display: flex; align-items: center; gap: calc(20 * var(--u)); white-space: nowrap; animation: pop .7s .7s cubic-bezier(.2, 1.4, .4, 1) both; }
+  .an-who .team { padding: calc(2 * var(--u)) calc(20 * var(--u)); border-width: calc(3 * var(--u)); box-shadow: calc(4 * var(--u)) calc(4 * var(--u)) 0 var(--ink); font-size: calc(36 * var(--u)); line-height: calc(54 * var(--u)); }
+  .an-who b { font-family: var(--font-display); font-size: calc(100 * var(--u)); line-height: 1; }
   @keyframes pop { from { transform: scale(.4); opacity: 0; } }
+  /* 색종이 비 (원색 + 잉크 테두리) */
   .coin {
-    position: fixed; top: -6vh; width: 4.4vh; height: 4.4vh; border-radius: 50%; z-index: 11; pointer-events: none;
-    background: var(--fx-coin-img, radial-gradient(circle at 35% 30%, #FFF4D6, #E8C27A 50%, #B88A3E)) center / contain no-repeat;
-    box-shadow: inset 0 0 0 .25vh #A87B32;
+    position: absolute; top: calc(-40 * var(--u)); z-index: 1; pointer-events: none;
+    width: calc(16 * var(--u)); height: calc(28 * var(--u)); border-radius: calc(4 * var(--u));
+    background: var(--c); border: calc(2.5 * var(--u)) solid var(--ink);
     animation: fall linear forwards;
   }
+  .coin.bit-circle { width: calc(22 * var(--u)); height: calc(22 * var(--u)); border-radius: 50%; }
+  .coin.bit-spark { width: calc(34 * var(--u)); height: calc(34 * var(--u)); background: none; border: 0; }
+  .coin svg { display: block; width: 100%; height: 100%; }
   @keyframes fall { to { transform: translateY(115vh) rotate(var(--r)); } }
-  /* 발표 등급별: JACKPOT 은 광선이 빠르고 밝게, 글자가 크게 */
-  #announce.tier-epic .an-rays { background: repeating-conic-gradient(rgba(232, 194, 122, .12) 0 8deg, transparent 8deg 16deg); animation-duration: 14s; }
-  #announce.tier-legend { background: radial-gradient(circle at 50% 45%, rgba(70, 46, 110, .95), rgba(9, 7, 17, .97) 70%); }
-  #announce.tier-legend .an-rays { background: var(--fx-rays-img, repeating-conic-gradient(rgba(255, 226, 160, .2) 0 6deg, transparent 6deg 12deg)); animation-duration: 7s; }
-  /* 발표 연출 리소스 (assets/fx): 등급별 광선 · 문구 로고 · 동전/보석. 배경·패널은 벨벳 라운지 그대로 */
-  .an-rays { background: url(assets/fx/rays-blue.png) center / contain no-repeat; }
-  #announce.tier-epic .an-rays { background: url(assets/fx/rays-magenta.png) center / contain no-repeat; }
-  #announce.tier-legend .an-rays { background: url(assets/fx/rays-gold.png) center / contain no-repeat; }
-  .an-congrats { line-height: 0; font-size: 0; letter-spacing: 0; }
-  .an-congrats img { display: block; width: 52vw; max-width: 1000px; height: auto; }
-  #announce.tier-epic .an-congrats img { width: 40vw; max-width: 760px; }
-  #announce.tier-legend .an-congrats img { width: 47vw; max-width: 900px; animation: shimmer 1.4s ease-in-out .6s infinite; }
-  @keyframes shimmer { 50% { filter: drop-shadow(0 0 5vh rgba(255, 226, 160, 1)) brightness(1.25); } }
-  .coin { border-radius: 0; box-shadow: none; background-size: contain; background-repeat: no-repeat; background-position: center; }
-  /* 발표 동전은 사진·이름 뒤로 지나가게 */
-  #announce .coin { position: absolute; z-index: 1; }
-  #announce .an-body { z-index: 2; }
 
+  /* 아래 버튼 (소리 · 입장 QR) */
   .sound-btn {
     position: fixed; right: 2vw; bottom: 2.4vh; z-index: 20; cursor: pointer;
-    background: rgba(23, 18, 42, .7); color: var(--muted); padding: 1vh 1.8vh; border-radius: 1.2vh; font: inherit; font-size: 1.7vh; font-weight: 600;
-    border: 1px solid var(--line-2); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    padding: calc(7 * var(--u)) calc(16 * var(--u)); border-radius: calc(12 * var(--u));
+    background: var(--paper); color: var(--ink); border: calc(2.5 * var(--u)) solid var(--ink); box-shadow: calc(3 * var(--u)) calc(3 * var(--u)) 0 var(--ink);
+    font-family: var(--font-label); font-size: calc(16 * var(--u)); transition: opacity .5s;
   }
+  .sound-btn:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--ink); }
+  .sound-btn.on { background: var(--mint); }
+  .qr-btn { right: auto; left: 2vw; background: var(--yellow); }
+  body.idle .sound-btn { opacity: 0; }
   @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; } }
-  .sound-btn.on { color: var(--gold); border-color: var(--gold-line); }
-  .qr-btn { right: auto; left: 2vw; color: var(--gold); border-color: var(--gold-line); }
-  body.idle .sound-btn { opacity: 0; transition: opacity .5s; }
 
-  /* 입장 QR (버튼 또는 Q 키). 당첨 발표(#announce)가 오면 그 위로 뜨도록 한 칸 아래 */
+  /* 입장 QR (버튼 또는 Q 키, QRCard). 당첨 발표(#announce)가 오면 그 위로 뜨도록 한 칸 아래 */
   #qr-view {
     position: fixed; inset: 0; z-index: 9; display: grid; place-items: center; cursor: pointer; overflow: hidden;
-    background:
-      radial-gradient(60% 70% at 30% 50%, rgba(124, 74, 190, .30), transparent 70%),
-      radial-gradient(40% 50% at 100% 0%, rgba(232, 194, 122, .08), transparent 60%),
-      var(--bg);
+    background: radial-gradient(var(--cream-dot) calc(2 * var(--u)), transparent calc(2 * var(--u))) 0 0 / calc(24 * var(--u)) calc(24 * var(--u)), var(--cream);
     animation: fadeIn .35s ease;
   }
   #qr-view[hidden] { display: none; }
   body.qr-open .qr-btn { display: none; }
-  #qr-view .an-rays { left: 32%; top: 50%; opacity: .35; animation-duration: 60s; background: url(assets/fx/rays-gold.png) center / contain no-repeat; }
-  .qr-body { position: relative; display: grid; grid-template-columns: auto auto; align-items: center; gap: 7vw; }
+  .qr-frame { position: relative; width: calc(1280 * var(--u)); height: calc(720 * var(--u)); display: flex; align-items: center; justify-content: center; }
+  .qr-deco { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .qr-body { position: relative; display: flex; align-items: center; justify-content: center; gap: calc(86 * var(--u)); }
+  .qr-wrap { position: relative; animation: pop .6s .05s cubic-bezier(.2, 1.4, .4, 1) both; }
   .qr-card {
-    padding: 2.6vh; border-radius: 3.2vh; background: #fff; line-height: 0;
-    box-shadow: 0 0 0 .5vh #C9963F, 0 0 0 1.2vh rgba(232, 194, 122, .2), 0 0 16vh -2vh rgba(232, 194, 122, .6);
-    animation: pop .6s .05s cubic-bezier(.2, 1.4, .4, 1) both;
+    padding: calc(24 * var(--u)); border-radius: calc(30 * var(--u)); background: var(--paper); line-height: 0;
+    border: calc(5 * var(--u)) solid var(--ink); box-shadow: calc(10 * var(--u)) calc(10 * var(--u)) 0 var(--ink);
   }
-  .qr-card img { width: 62vh; height: 62vh; display: block; image-rendering: pixelated; }
-  .qr-info { display: flex; flex-direction: column; align-items: flex-start; animation: slideIn .6s .15s ease both; }
-  .qr-kicker { font-family: var(--num); font-size: 2vh; font-weight: 600; letter-spacing: .4em; color: var(--gold); }
-  .qr-title { margin-top: 1.6vh; font-size: 7vh; font-weight: 700; line-height: 1.2; letter-spacing: -.02em; }
-  .qr-title em { font-style: normal; background: var(--gold-text); -webkit-background-clip: text; background-clip: text; color: transparent; }
-  .qr-steps { display: flex; flex-direction: column; gap: 1.6vh; margin-top: 4.4vh; }
-  .qr-steps span { display: flex; align-items: center; gap: 1.8vh; font-size: 3vh; font-weight: 600; color: var(--muted); }
-  .qr-steps b { font-family: var(--num); font-size: 2vh; width: 4.4vh; height: 4.4vh; border-radius: 50%; display: grid; place-items: center; background: var(--gold-metal); color: var(--gold-ink); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .55); }
+  .qr-card img { width: calc(420 * var(--u)); height: calc(420 * var(--u)); display: block; image-rendering: pixelated; }
+  .qr-shoot {
+    position: absolute; top: calc(-28 * var(--u)); left: calc(-36 * var(--u)); padding: calc(6 * var(--u)) calc(20 * var(--u)); border-radius: calc(16 * var(--u));
+    background: var(--red); border: calc(3 * var(--u)) solid var(--ink); box-shadow: calc(4 * var(--u)) calc(4 * var(--u)) 0 var(--ink);
+    color: var(--paper); font-family: var(--font-display); font-size: calc(28 * var(--u)); white-space: nowrap; transform: rotate(-9deg);
+  }
+  .qr-star { position: absolute; right: calc(-44 * var(--u)); bottom: calc(-40 * var(--u)); width: calc(92 * var(--u)); height: calc(92 * var(--u)); overflow: visible; transform: rotate(12deg); }
+  .qr-info { display: flex; flex-direction: column; align-items: flex-start; width: calc(500 * var(--u)); animation: slideIn .6s .15s ease both; }
+  .qr-kicker {
+    padding: calc(4 * var(--u)) calc(16 * var(--u)); border-radius: calc(9 * var(--u)); background: var(--mint); border: calc(3 * var(--u)) solid var(--ink); box-shadow: calc(3 * var(--u)) calc(3 * var(--u)) 0 var(--ink);
+    font-family: var(--font-label); font-size: calc(18 * var(--u)); letter-spacing: .16em; transform: rotate(-3deg);
+  }
+  .qr-logo { margin-top: calc(18 * var(--u)); display: flex; align-items: center; }
+  .qr-logo .hy-star { width: calc(108 * var(--u)); height: calc(108 * var(--u)); }
+  .qr-logo .hy-star span { font-size: calc(64 * var(--u)); text-shadow: calc(3 * var(--u)) calc(3 * var(--u)) 0 var(--ink); }
+  .qr-logo .hy-star + .hy-star { margin-left: calc(-6 * var(--u)); }
+  .qr-logo .hl { margin-left: calc(12 * var(--u)); padding: 0 calc(6 * var(--u)); font-family: var(--font-display); font-size: calc(54 * var(--u)); line-height: 1.12; white-space: nowrap; }
+  .qr-with { margin-top: calc(2 * var(--u)); margin-left: calc(222 * var(--u)); font-family: var(--font-label); font-size: calc(28 * var(--u)); line-height: 1.2; }
+  .qr-org {
+    margin-top: calc(12 * var(--u)); padding: calc(6 * var(--u)) calc(22 * var(--u)) calc(10 * var(--u)); border-radius: calc(18 * var(--u));
+    background: var(--ink); color: var(--yellow); box-shadow: calc(6 * var(--u)) calc(6 * var(--u)) 0 var(--red); transform: rotate(-2deg);
+    font-family: var(--font-display); font-size: calc(46 * var(--u)); line-height: 1.1; white-space: nowrap;
+  }
+  .qr-title { margin-top: calc(24 * var(--u)); font-family: var(--font-display); font-size: calc(34 * var(--u)); line-height: 1.2; }
+  .qr-steps { margin: calc(22 * var(--u)) 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: calc(12 * var(--u)); }
+  .qr-steps li { display: flex; align-items: center; gap: calc(14 * var(--u)); font-family: var(--font-label); font-size: calc(26 * var(--u)); }
+  .qr-steps b {
+    width: calc(44 * var(--u)); height: calc(44 * var(--u)); border-radius: 50%; display: grid; place-items: center;
+    background: var(--yellow); border: calc(3 * var(--u)) solid var(--ink); box-shadow: calc(2 * var(--u)) calc(2 * var(--u)) 0 var(--ink);
+    font-family: var(--font-display); font-size: calc(20 * var(--u));
+  }
+  .qr-steps li:last-child b { background: var(--red); color: var(--paper); }
+  .qr-bottom { margin-top: calc(26 * var(--u)); display: flex; align-items: center; gap: calc(16 * var(--u)); }
   .qr-url {
-    margin-top: 4.4vh; padding: 1.4vh 2.4vh; border-radius: 1.6vh; font-family: var(--num); font-size: 2.6vh; font-weight: 600; letter-spacing: .02em;
-    background: var(--lit), var(--panel); box-shadow: inset 0 0 0 1px var(--gold-line);
+    padding: calc(10 * var(--u)) calc(18 * var(--u)); border-radius: calc(16 * var(--u)); background: var(--paper);
+    border: calc(3 * var(--u)) solid var(--ink); box-shadow: calc(4 * var(--u)) calc(4 * var(--u)) 0 var(--ink);
+    font-family: var(--font-label); font-size: calc(20 * var(--u)); white-space: nowrap;
   }
-  .qr-joined { margin-top: 3.4vh; font-size: 2.4vh; color: var(--muted); display: flex; align-items: baseline; gap: .8vh; }
-  .qr-joined b { font-family: var(--num); font-size: 4.4vh; font-weight: 600; color: var(--gold); text-shadow: 0 0 2.4vh rgba(232, 194, 122, .45); }
-  .qr-hint { position: absolute; bottom: 2.6vh; left: 0; right: 0; text-align: center; font-size: 1.6vh; color: var(--dim); transition: opacity .5s; }
+  .qr-joined {
+    display: flex; align-items: baseline; gap: calc(6 * var(--u)); padding: calc(4 * var(--u)) calc(16 * var(--u)); border-radius: calc(16 * var(--u));
+    background: var(--yellow); border: calc(3 * var(--u)) solid var(--ink); box-shadow: calc(4 * var(--u)) calc(4 * var(--u)) 0 var(--ink);
+    font-family: var(--font-label); font-size: calc(18 * var(--u)); white-space: nowrap;
+  }
+  .qr-joined:empty { display: none; }
+  .qr-joined b { font-family: var(--font-display); font-size: calc(34 * var(--u)); line-height: 1.2; }
+  .qr-hint { position: absolute; bottom: 2.6vh; left: 0; right: 0; text-align: center; font-size: calc(15 * var(--u)); color: var(--ink-muted); transition: opacity .5s; }
   body.idle .qr-hint { opacity: 0; }
   /* Netlify 가 끼워 넣는 'Powered by Netlify' 배지 숨김 */
   #nl-badge-frame { display: none !important; }
@@ -217,18 +323,20 @@
 <body>
 <div class="wrap">
   <header>
-    <div class="title"><small>SC사업본부 · 2026.10.15 – 16</small><b>대부도 워크샵 <em>럭키 드로우</em></b></div>
+    <div class="title" id="stage-title"></div>
     <div class="status" id="status"><i></i>연결 중…</div>
     <div class="counter">
-      <div class="label">상자에 남은 복권</div>
-      <div class="num" id="counter">---<span> / ---</span></div>
+      <div class="counter-row">
+        <div class="label">상자에 남은 복권</div>
+        <div class="num" id="counter">---<span> / ---</span></div>
+      </div>
       <div class="bar"><i id="counter-bar" style="width:100%"></i></div>
     </div>
   </header>
   <main>
     <div class="prizes" id="prizes"></div>
     <aside class="feed">
-      <h2><i></i>실시간 결과</h2>
+      <h2>실시간 결과<span class="live"><i></i>LIVE</span></h2>
       <div class="feed-list" id="feed"></div>
     </aside>
   </main>
@@ -237,19 +345,42 @@
 <button class="sound-btn qr-btn" id="qr-btn">입장 QR</button>
 
 <div id="qr-view" hidden>
-  <div class="an-rays"></div>
-  <div class="qr-body">
-    <div class="qr-card"><img src="print/qr.png" alt="입장 QR 코드"></div>
-    <div class="qr-info">
-      <div class="qr-kicker">LUCKY DRAW</div>
-      <div class="qr-title">폰 카메라로 찍고<br><em>입장하세요</em></div>
-      <div class="qr-steps">
-        <span><b>1</b>QR 찍기</span>
-        <span><b>2</b>이름 입력</span>
-        <span><b>3</b>뽑기권 받고 뽑기</span>
+  <div class="qr-frame">
+    <svg class="qr-deco" viewBox="0 0 1280 720" aria-hidden="true">
+      <g stroke="#1E1A2E" stroke-width="2.5" stroke-linejoin="round">
+        <rect x="40" y="60" width="16" height="30" rx="4" fill="#FF4D3D" transform="rotate(-24 48 75)"/>
+        <circle cx="56" cy="640" r="11" fill="#3FA9F5"/>
+        <rect x="600" y="40" width="16" height="16" rx="3" fill="#2DBE8C" transform="rotate(18 608 48)"/>
+        <circle cx="1230" cy="60" r="10" fill="#FFD23F"/>
+        <rect x="1212" y="610" width="16" height="30" rx="4" fill="#9B7BEA" transform="rotate(30 1220 625)"/>
+        <circle cx="610" cy="680" r="8" fill="#FF4D3D"/>
+        <rect x="1180" y="340" width="14" height="14" rx="3" fill="#FF4D3D" transform="rotate(-16 1187 347)"/>
+      </g>
+      <path d="M12 1C13 8 16 11 23 12C16 13 13 16 12 23C11 16 8 13 1 12C8 11 11 8 12 1Z" transform="translate(1150 180) scale(1.6)" fill="#3FA9F5" stroke="#1E1A2E" stroke-width="2.5" vector-effect="non-scaling-stroke" stroke-linejoin="round"/>
+      <path d="M30 360 q14 -16 28 0 t28 0 t28 0" fill="none" stroke="#2DBE8C" stroke-width="6" stroke-linecap="round"/>
+    </svg>
+    <div class="qr-body">
+      <div class="qr-wrap">
+        <div class="qr-card"><img src="print/qr.png" alt="입장 QR 코드"></div>
+        <div class="qr-shoot">찍어 주세요!</div>
+        <svg class="qr-star" viewBox="0 0 100 100" aria-hidden="true" id="qr-star"></svg>
       </div>
-      <div class="qr-url">workshopticket.netlify.app</div>
-      <div class="qr-joined" id="qr-joined"></div>
+      <div class="qr-info">
+        <div class="qr-kicker">LUCKY DRAW</div>
+        <div class="qr-logo" id="qr-logo"></div>
+        <div class="qr-with">와 함께하는</div>
+        <div class="qr-org">SC사업본부 워크샵</div>
+        <div class="qr-title">폰 카메라로 찍고 입장하세요</div>
+        <ol class="qr-steps">
+          <li><b>1</b>QR 찍기</li>
+          <li><b>2</b>이름 입력</li>
+          <li><b>3</b>뽑기권 받고 뽑기</li>
+        </ol>
+        <div class="qr-bottom">
+          <div class="qr-url">workshopticket.netlify.app</div>
+          <div class="qr-joined" id="qr-joined"></div>
+        </div>
+      </div>
     </div>
   </div>
   <div class="qr-hint">아무 곳이나 클릭하거나 Q · Esc 를 누르면 닫혀요</div>
@@ -262,10 +393,55 @@
   'use strict';
   const cfg = window.TICKET_CONFIG;
   const sb = window.supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_ANON_KEY, { auth: { persistSession: false } });
-  const TEAM_COLORS = ['#F08A7E', '#7FB4F0', '#7FD6A8', '#B9A4F2', '#F2B48A', '#F0A6C8', '#8AD3E0', '#D6D07A'];
+  // 팀 색 (앱과 같음): 칩 채움 전용, 위 글자는 잉크
+  const TEAM_COLORS = ['#FF6B5E', '#3FA9F5', '#2DBE8C', '#9B7BEA', '#FFD23F', '#F58BC0', '#7FD3E8', '#C8D96B'];
   const $ = (id) => document.getElementById(id);
   const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const team = (t) => (t ? `<span class="team" style="--c:${TEAM_COLORS[(t - 1) % 8]}">${t}팀</span>` : '');
+
+  // ---- 혁혁 브라더스 로고 조각 (README "타이틀 로고") ----
+  const STAR24 = '98,50 86.7,59.8 91.6,74 76.9,76.9 74,91.6 59.8,86.7 50,98 40.2,86.7 26,91.6 23.1,76.9 8.4,74 13.3,59.8 2,50 13.3,40.2 8.4,26 23.1,23.1 26,8.4 40.2,13.3 50,2 59.8,13.3 74,8.4 76.9,23.1 91.6,26 86.7,40.2';
+  const STAR36 = '99,50 85.5,56.2 96,66.8 81.2,68 87.5,81.5 73.1,77.6 74.5,92.4 62.3,83.8 58.5,98.3 50,86 41.5,98.3 37.7,83.8 25.5,92.4 26.9,77.6 12.5,81.5 18.8,68 4,66.8 14.5,56.2 1,50 14.5,43.8 4,33.2 18.8,32 12.5,18.5 26.9,22.4 25.5,7.6 37.7,16.2 41.5,1.7 50,14 58.5,1.7 62.3,16.2 74.5,7.6 73.1,22.4 87.5,18.5 81.2,32 96,33.2 85.5,43.8';
+  const SPARK_D = 'M12 1C13 8 16 11 23 12C16 13 13 16 12 23C11 16 8 13 1 12C8 11 11 8 12 1Z';
+  // 별 안 "혁": Jua + 흰색 + 잉크 그림자 하나 (Bagel Fat One·외곽선 금지 → "헉"처럼 읽힘)
+  const hyukStar = (fill, rot, shadow, sw) => `
+    <div class="hy-star" style="transform:rotate(${rot}deg)">
+      <svg viewBox="0 0 100 100" aria-hidden="true"><polygon points="${STAR24}" fill="#1E1A2E" transform="translate(${shadow} ${shadow})"/><polygon points="${STAR24}" fill="${fill}" stroke="#1E1A2E" stroke-width="${sw}" vector-effect="non-scaling-stroke" stroke-linejoin="round"/></svg>
+      <span>혁</span>
+    </div>`;
+  $('stage-title').innerHTML = `
+    <div class="stars">${hyukStar('#FF4D3D', -10, 4, 2.5)}${hyukStar('#3FA9F5', 9, 4, 2.5)}</div>
+    <div class="title-text">
+      <div class="t-bros"><b>브라더스</b><span>와 함께하는</span></div>
+      <div class="t-name hl">SC사업본부 워크샵</div>
+      <div class="t-date">럭키 드로우 · 10.15 – 16</div>
+    </div>`;
+  $('qr-logo').innerHTML = `${hyukStar('#FF4D3D', -10, 3.5, 3.5)}${hyukStar('#3FA9F5', 9, 3.5, 3.5)}<span class="hl">브라더스</span>`;
+  $('qr-star').innerHTML = `<polygon points="${STAR24}" fill="#1E1A2E" transform="translate(4 4)"/><polygon points="${STAR24}" fill="#FFD23F" stroke="#1E1A2E" stroke-width="3" vector-effect="non-scaling-stroke" stroke-linejoin="round"/><path d="M50 30 L50 70 M30 50 L70 50" stroke="#1E1A2E" stroke-width="4" vector-effect="non-scaling-stroke" stroke-linecap="round"/>`;
+  const SAD = '<svg viewBox="0 0 24 24" fill="none" stroke="#1E1A2E" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8.5 16.5c1.8-2 5.2-2 7 0M9 9.5h.01M15 9.5h.01"/></svg>';
+  // 발표 화면 가장자리 색종이 · 반짝이 · 물결 (ScreenStageAnnounce)
+  const ANNOUNCE_DECO = `
+    <svg class="an-deco" viewBox="0 0 1280 720" aria-hidden="true">
+      <g stroke="#1E1A2E" stroke-width="2.5" stroke-linejoin="round">
+        <rect x="60" y="150" width="18" height="32" rx="4" fill="#FF4D3D" transform="rotate(-26 69 166)"/>
+        <circle cx="70" cy="420" r="12" fill="#2DBE8C"/>
+        <rect x="40" y="590" width="18" height="18" rx="3" fill="#FFD23F" transform="rotate(22 49 599)"/>
+        <rect x="690" y="40" width="16" height="30" rx="4" fill="#3FA9F5" transform="rotate(30 698 55)"/>
+        <circle cx="1220" cy="70" r="11" fill="#FFD23F"/>
+        <rect x="1196" y="300" width="16" height="30" rx="4" fill="#FF4D3D" transform="rotate(34 1204 315)"/>
+        <circle cx="1236" cy="520" r="10" fill="#9B7BEA"/>
+        <rect x="1150" y="640" width="18" height="18" rx="3" fill="#2DBE8C" transform="rotate(-18 1159 649)"/>
+        <circle cx="700" cy="660" r="9" fill="#FF4D3D"/>
+        <rect x="640" y="380" width="14" height="26" rx="4" fill="#FFD23F" transform="rotate(-30 647 393)"/>
+        <circle cx="380" cy="30" r="8" fill="#9B7BEA"/>
+        <circle cx="440" cy="694" r="9" fill="#3FA9F5"/>
+        <rect x="960" y="30" width="14" height="14" rx="3" fill="#2DBE8C" transform="rotate(18 967 37)"/>
+      </g>
+      <path d="${SPARK_D}" transform="translate(1100 140) scale(2)" fill="#FFD23F" stroke="#1E1A2E" stroke-width="2.5" vector-effect="non-scaling-stroke" stroke-linejoin="round"/>
+      <path d="${SPARK_D}" transform="translate(1110 560) scale(1.4)" fill="#FFFFFF" stroke="#1E1A2E" stroke-width="2.5" vector-effect="non-scaling-stroke" stroke-linejoin="round"/>
+      <path d="M40 70 q14 -16 28 0 t28 0 t28 0" fill="none" stroke="#FF4D3D" stroke-width="6" stroke-linecap="round"/>
+      <path d="M1120 440 q14 -16 28 0 t28 0 t28 0" fill="none" stroke="#3FA9F5" stroke-width="6" stroke-linecap="round"/>
+    </svg>`;
 
   let prizes = [];
   let draws = [];          // 공개된(뜯은) 결과만
@@ -284,10 +460,11 @@
     if (p && prizes.find((x) => !x.is_blank)?.id === p.id) return 'legend';
     return p?.premium ? 'epic' : 'rare';
   };
+  // 등급별 외침 글자 · 색종이 수 · 발표 시간 · 색종이 색
   const FX = {
-    legend: { label: 'JACKPOT', coins: 140, ms: 7000, title: 'title-jackpot', coin: ['coin-w', 'coin-w-tilt', 'gem-red', 'spark'] },
-    epic:   { label: 'BIG WIN', coins: 90,  ms: 5500, title: 'title-big-win', coin: ['coin-w', 'gem-magenta', 'spark'] },
-    rare:   { label: 'CONGRATULATIONS', coins: 50, ms: 5000, title: 'title-congratulations', coin: ['coin-w', 'gem-blue'] },
+    legend: { label: '대박!',     coins: 140, ms: 7000, colors: ['#FF4D3D', '#FFD23F', '#3FA9F5', '#2DBE8C', '#9B7BEA'] },
+    epic:   { label: 'BIG WIN!',  coins: 90,  ms: 5500, colors: ['#FFD23F', '#9B7BEA', '#3FA9F5', '#FF4D3D'] },
+    rare:   { label: '축하해요!', coins: 50,  ms: 5000, colors: ['#3FA9F5', '#2DBE8C', '#FFD23F'] },
   };
 
   // ---------------- 데이터 ----------------
@@ -300,7 +477,7 @@
       sb.from('ticket_players').select('id', { count: 'exact', head: true }),
     ]);
     if (pz.error || dr.error || st.error) { $('status').innerHTML = '<i></i>연결 오류'; return; }
-    $('qr-joined').innerHTML = pl.error ? '' : `지금 <b>${pl.count ?? 0}</b>명 입장했어요`;
+    $('qr-joined').innerHTML = pl.error ? '' : `지금<b>${pl.count ?? 0}</b>명`;
     prizes = pz.data;
     draws = dr.data;
     open = st.data.some((s) => s.key === 'draw_open' && s.value === 'true');
@@ -348,19 +525,20 @@
     $('status').className = `status ${open ? 'open' : ''}`;
 
     const real = prizes.filter((p) => !p.is_blank);
+    $('prizes').classList.toggle('dense', real.length > 8);
     $('prizes').innerHTML = real.length === 0
       ? '<div class="empty">상품 준비 중…</div>'
       : real.map((p, i) => {
         const won = draws.filter((d) => d.prize_id === p.id);
         const left = p.quantity - won.length;
+        const who = !won.length ? '아직 당첨자 없음'
+          : p.announce === false ? `당첨 ${won.length}명`
+          : won.map((d) => esc(d.player_name)).join(' · ');
         return `
           <div class="prize ${i === 0 ? 'first' : ''} ${left <= 0 ? 'soldout' : ''}">
-            <div class="p-emoji">${visual(p.id, p.emoji)}</div>
-            <div><span class="p-grade">${esc(p.grade)}</span><div class="p-name">${esc(p.name)}</div></div>
+            <div class="p-emoji">${visual(p.id, p.emoji)}${left <= 0 ? '<div class="stamp">SOLD<br>OUT</div>' : ''}</div>
+            <div class="p-info"><span class="p-grade">${esc(p.grade)}</span><div class="p-name">${esc(p.name)}</div><div class="p-winners">${who}</div></div>
             <div class="p-left"><b>${left}</b><span>/ ${p.quantity} 남음</span></div>
-            ${!won.length ? '' : p.announce === false
-              ? `<div class="p-winners"><span>당첨 ${won.length}명</span></div>`
-              : `<div class="p-winners">${won.map((d) => `<span>${team(d.team)}${esc(d.player_name)}</span>`).join('')}</div>`}
           </div>`;
       }).join('');
 
@@ -369,9 +547,9 @@
     feedShown = feedShown || new Set();
     $('feed').innerHTML = draws.length === 0
       ? '<div class="empty">아직 결과가 없어요</div>'
-      : draws.slice(0, 14).map((d) => `
-        <div class="feed-item ${isBig(d) ? 'big' : ''} ${!firstRender && !feedShown.has(d.id) ? 'enter' : ''}">
-          <div class="fe">${d.is_blank ? '😢' : visual(d.prize_id, d.emoji)}</div>
+      : draws.slice(0, 14).map((d, i) => `
+        <div class="feed-item ${i === 0 ? 'newest' : ''} ${isBig(d) ? 'big' : ''} ${!firstRender && !feedShown.has(d.id) ? 'enter' : ''}">
+          <div class="fe">${d.is_blank ? SAD : visual(d.prize_id, d.emoji)}</div>
           <div class="fn">${team(d.team)}${esc(d.player_name)}</div>
           <div class="fr">${esc(d.grade)}</div>
         </div>`).join('');
@@ -387,31 +565,47 @@
     const tier = tierOf(d);
     el.id = 'announce';
     el.className = `tier-${tier}`;
+    // 이름이 길면 이름 글자만 줄임 (줄바꿈 안 함)
+    const nameLen = [...String(d.player_name ?? '')].length;
+    const nameSize = Math.min(100, Math.round(400 / Math.max(4, nameLen)));
     el.innerHTML = `
       <div class="an-rays"></div>
-      <div class="an-body">
-        <div class="an-congrats"><img src="assets/fx/${FX[tier].title}.png" alt="${FX[tier].label}"></div>
-        <div class="an-emoji">${visual(d.prize_id, d.emoji)}</div>
-        <div class="an-grade">${esc(d.grade)} 당첨</div>
-        <div class="an-prize">${esc(d.prize_name)}</div>
-        <div class="an-who">${team(d.team)}${esc(d.player_name)}</div>
+      <div class="an-frame">
+        ${ANNOUNCE_DECO}
+        <svg class="an-burst" viewBox="0 0 100 100" aria-hidden="true"><polygon points="${STAR36}" fill="#1E1A2E" transform="translate(1.4 1.4)"/><polygon points="${STAR36}" fill="#FFD23F" stroke="#1E1A2E" stroke-width="4" vector-effect="non-scaling-stroke" stroke-linejoin="round"/></svg>
+        <div class="an-card">
+          <div class="an-grade">${esc(d.grade)}</div>
+          <div class="an-emoji">${visual(d.prize_id, d.emoji)}</div>
+          <div class="an-tape" aria-hidden="true"></div>
+        </div>
+        <div class="an-text">
+          <div class="an-congrats">${esc(FX[tier].label)}</div>
+          <div class="an-pill">${esc(d.grade)} 당첨</div>
+          <div class="an-prize">${esc(d.prize_name)}</div>
+          <div class="an-rule"></div>
+          <div class="an-who">${team(d.team)}<b style="font-size:calc(${nameSize} * var(--u))">${esc(d.player_name)}</b></div>
+        </div>
       </div>`;
     document.body.appendChild(el);
     beep(tier === 'legend' ? 'jackpot' : 'fanfare');
-    coinRain(FX[tier].coins, FX[tier].coin);
+    coinRain(FX[tier].coins, FX[tier].colors);
     setTimeout(() => {
       el.classList.add('hide');
       setTimeout(() => { el.remove(); showing = false; nextAnnounce(); }, 500);
     }, queue.length ? 3000 : FX[tier].ms);   // 뒤에 대기 중이면 3초, 아니면 등급별 시간
   }
 
-  function coinRain(n = 50, pics = ['coin-w']) {
+  // 색종이 비: 원 · 둥근 사각형 · 반짝이 (원색 + 잉크 테두리)
+  function coinRain(n = 50, colors = FX.rare.colors) {
     for (let i = 0; i < n; i++) {
       const c = document.createElement('div');
-      c.className = 'coin';
-      c.style.backgroundImage = `url(assets/fx/particles/${pics[i % pics.length]}.png)`;
+      const color = colors[i % colors.length];
+      const shape = i % 6 === 0 ? 'spark' : i % 2 ? 'circle' : 'rect';
+      c.className = `coin bit-${shape}`;
+      if (shape === 'spark') c.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="${SPARK_D}" fill="${color}" stroke="#1E1A2E" stroke-width="2" stroke-linejoin="round"/></svg>`;
+      else c.style.setProperty('--c', color);
       c.style.left = `${Math.random() * 100}vw`;
-      c.style.setProperty('--r', `${Math.random() * 60 - 30}deg`);   // 거의 똑바로 (W 가 읽히게)
+      c.style.setProperty('--r', `${Math.random() * 720 - 360}deg`);
       c.style.animationDuration = `${1.8 + Math.random() * 1.8}s`;
       c.style.animationDelay = `${Math.random() * 1.2}s`;
       // 발표 화면 안(사진·이름 뒤)으로 떨어지게
